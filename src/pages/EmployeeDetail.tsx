@@ -87,7 +87,7 @@ export function EmployeeDetail() {
         </div>
       )}
 
-      <dl className="card-in mb-6 max-w-lg divide-y divide-divider rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card as="dl" className="card-in mb-6 max-w-lg divide-y divide-divider">
         {(
           [
             ['Department', employee.department ?? '—'],
@@ -102,7 +102,7 @@ export function EmployeeDetail() {
             <dd className="font-medium text-text-primary">{value}</dd>
           </div>
         ))}
-      </dl>
+      </Card>
 
       <h2 className="text-h6 mb-3">Currently holding ({openAssignments.length})</h2>
       <Card className="mb-6 overflow-hidden">

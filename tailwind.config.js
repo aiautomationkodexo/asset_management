@@ -64,6 +64,11 @@ export default {
         "text-tertiary": "var(--text-tertiary)",
         "text-on-brand": "var(--text-on-brand)",
       },
+      backgroundImage: {
+        "gradient-a": "var(--brand-gradient-a)",
+        "gradient-b": "var(--brand-gradient-b)",
+        "card-tint": "var(--card-tint)",
+      },
       fontFamily: {
         "display-hyper": "var(--font-display-hyper)",
         "display-statement": "var(--font-display-statement)",
@@ -88,11 +93,6 @@ export default {
         "radius-lg": "var(--radius-lg)",
         "radius-xl": "var(--radius-xl)",
         "radius-pill": "var(--radius-pill)",
-      },
-      boxShadow: {
-        sm: "var(--shadow-sm)",
-        md: "var(--shadow-md)",
-        lg: "var(--shadow-lg)",
       },
       keyframes: {
         "accordion-down": {

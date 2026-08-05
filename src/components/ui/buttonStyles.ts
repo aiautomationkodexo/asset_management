@@ -6,9 +6,9 @@ import { cn } from '@/lib/utils'
 export type ButtonVariant = 'primary' | 'secondary' | 'tertiary' | 'ghost' | 'danger'
 
 const VARIANT_CLASS: Record<ButtonVariant, string> = {
-  primary: 'bg-brand-red text-text-on-brand hover:bg-brand-red-deep shadow-sm',
-  secondary: 'bg-brand-black text-brand-white hover:bg-n-800 shadow-sm',
-  tertiary: 'border border-border bg-bg-elevated text-text-primary hover:bg-bg-alt',
+  primary: 'bg-brand-red text-text-on-brand hover:bg-brand-red-deep border border-transparent',
+  secondary: 'bg-brand-black text-brand-white hover:bg-n-800 border border-transparent',
+  tertiary: 'border border-border bg-bg-elevated text-text-primary hover:border-n-400 hover:bg-bg-alt',
   ghost: 'text-text-secondary hover:bg-bg-alt hover:text-text-primary',
   danger: 'border border-error-border bg-bg-elevated text-error-text hover:bg-error-bg',
 }

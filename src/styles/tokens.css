@@ -43,7 +43,7 @@
   --font-display-hyper:     'Anton', 'Parafina Black', sans-serif;
   --font-display-statement: 'Unbounded', 'Parafina Black', sans-serif;
   --font-display:           var(--font-display-statement);
-  --font-heading:           'Bernabeu', 'Outfit', system-ui, sans-serif;
+  --font-heading:           'Bernabeu', 'Cormorant Garamond', Georgia, serif;
   --font-body:              'Manrope', system-ui, sans-serif;
   --font-mono:              'JetBrains Mono', ui-monospace, monospace;
 
@@ -66,9 +66,9 @@
   --text-secondary: var(--n-600);
   --text-tertiary:  var(--n-500);
   --text-on-brand:  var(--brand-white);
-  --shadow-sm: 0 1px 2px rgba(9, 9, 11, 0.04);
-  --shadow-md: 0 4px 16px rgba(9, 9, 11, 0.06);
-  --shadow-lg: 0 24px 48px rgba(9, 9, 11, 0.10);
+  /* Depth comes from borders/gradients/motion, never box-shadow — see
+     .kx-surface and .glow-surface below. */
+  --card-tint: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-alt) 100%);
 }
 
 [data-theme="dark"] {
@@ -81,9 +81,7 @@
   --text-primary:   var(--n-100);
   --text-secondary: var(--n-400);
   --text-tertiary:  var(--n-500);
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
-  --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
-  --shadow-lg: 0 24px 48px rgba(0, 0, 0, 0.6);
+  --card-tint: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-alt) 100%);
 }
 
 /* ── Type scale (dashboard UI — heading font, not display) ───
@@ -134,6 +132,30 @@ code, pre, kbd { font-family: var(--font-mono); }
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--text-tertiary);
+}
+
+/* ── Depth without shadows ──────────────────────────
+ * A soft brand-colored glow behind a surface, revealed on hover —
+ * replaces box-shadow as the "lifted" cue. Pseudo-element radial
+ * gradient at low opacity, sits behind the surface via z-index.
+ */
+.glow-surface {
+  position: relative;
+  isolation: isolate;
+}
+.glow-surface::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 30% 20%, rgba(245, 69, 69, 0.16), transparent 65%);
+  opacity: 0;
+  transition: opacity 300ms ease;
+  z-index: -1;
+  pointer-events: none;
+}
+.glow-surface:hover::before {
+  opacity: 1;
 }
 
 /* ── Brand motion ────────────────────────────────── */
