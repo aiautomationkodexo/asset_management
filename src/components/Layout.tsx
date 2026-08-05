@@ -106,7 +106,7 @@ export function Layout() {
     <div className="flex min-h-screen bg-bg">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-bg-elevated md:flex">
         <div className="flex h-14 items-center border-b border-border px-6">
-          <Logo theme={theme} className="h-6 w-auto" />
+          <Logo theme={theme} className="w-3/4 h-auto" />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           <NavList items={allItems} groupId="desktop-nav" />
@@ -132,7 +132,7 @@ export function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-border bg-bg-elevated md:hidden">
           <div className="flex h-14 items-center justify-between px-4">
-            <Logo theme={theme} className="h-6 w-auto" />
+            <Logo theme={theme} className="w-3/4 h-auto" />
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}

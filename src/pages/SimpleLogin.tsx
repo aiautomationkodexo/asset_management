@@ -71,7 +71,7 @@ export function SimpleLogin() {
       />
 
       <div className="relative z-10 mb-8">
-        <Logo className="h-10 w-auto" />
+        <Logo className="h-16 w-auto" />
       </div>
 
       <Card className="relative z-10 w-full max-w-sm p-8">

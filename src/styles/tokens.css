@@ -84,11 +84,12 @@
   --card-tint: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-alt) 100%);
 }
 
-/* ── Type scale — h3-h6 are page titles / section / card headers
- * (--font-heading), differentiated by size/weight only.
+/* ── Type scale — h3/h4 are main page/section headings and use the
+ * display face (Unbounded); h5/h6 are card headers and stay on
+ * --font-heading (Bernabeu/Outfit) for softer hierarchy.
  */
-.text-h3 { font-family: var(--font-heading); font-size: 40px; line-height: 1.2; font-weight: 700; color: var(--text-strong); }
-.text-h4 { font-family: var(--font-heading); font-size: 28px; line-height: 1.25; font-weight: 700; color: var(--text-strong); }
+.text-h3 { font-family: var(--font-display-statement); font-size: 40px; line-height: 1.2; font-weight: 700; color: var(--text-strong); }
+.text-h4 { font-family: var(--font-display-statement); font-size: 28px; line-height: 1.25; font-weight: 700; color: var(--text-strong); }
 .text-h5 { font-family: var(--font-heading); font-size: 22px; line-height: 1.3; font-weight: 700; color: var(--text-strong); }
 .text-h6 { font-family: var(--font-heading); font-size: 18px; line-height: 1.35; font-weight: 700; color: var(--text-strong); }
 .text-body-sm { font-size: 14px; line-height: 1.5; }
