@@ -39,11 +39,12 @@
   --soft-amber:  #E6A600;
   --soft-purple: #7657E8;
 
-  /* ── Type ────────────────────────────────────────── */
-  --font-display-hyper:     'Anton', 'Parafina Black', sans-serif;
-  --font-display-statement: 'Unbounded', 'Parafina Black', sans-serif;
+  /* ── Type — Manrope only. Anton/Unbounded/Bernabeu were off-brand
+     against the real Kodexo Labs wordmark and have been dropped. ── */
+  --font-display-hyper:     'Manrope', system-ui, sans-serif;
+  --font-display-statement: 'Manrope', system-ui, sans-serif;
   --font-display:           var(--font-display-statement);
-  --font-heading:           'Bernabeu', 'Cormorant Garamond', Georgia, serif;
+  --font-heading:           'Manrope', system-ui, sans-serif;
   --font-body:              'Manrope', system-ui, sans-serif;
   --font-mono:              'JetBrains Mono', ui-monospace, monospace;
 
@@ -84,9 +85,8 @@
   --card-tint: linear-gradient(180deg, var(--bg-elevated) 0%, var(--bg-alt) 100%);
 }
 
-/* ── Type scale (dashboard UI — heading font, not display) ───
- * h3-h6 are page titles / section / card headers. Display faces
- * (Anton/Unbounded) are marketing-only and intentionally unused here.
+/* ── Type scale — h3-h6 are page titles / section / card headers,
+ * all Manrope (--font-heading), differentiated by size/weight only.
  */
 .text-h3 { font-family: var(--font-heading); font-size: 40px; line-height: 1.2; font-weight: 700; color: var(--text-strong); }
 .text-h4 { font-family: var(--font-heading); font-size: 28px; line-height: 1.25; font-weight: 700; color: var(--text-strong); }
@@ -104,26 +104,23 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
-/* H1 = Statement (Unbounded 900) per sot/visual-identity.md §2 */
 h1 {
   font-family: var(--font-display-statement);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  line-height: 1.0;
+  font-weight: 800;
+  line-height: 1.1;
   color: var(--text-strong);
 }
-/* H2 / H3 / H4 = Heading (Bernabeu) per sot/visual-identity.md §2 */
 h2, h3, h4 {
   font-family: var(--font-heading);
+  font-weight: 700;
   color: var(--text-strong);
   line-height: 1.2;
 }
 code, pre, kbd { font-family: var(--font-mono); }
 .statement-display {
   font-family: var(--font-display-statement);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  line-height: 0.98;
+  font-weight: 800;
+  line-height: 1.1;
 }
 .hyper-display { font-family: var(--font-display-hyper); }
 .mono-kicker {

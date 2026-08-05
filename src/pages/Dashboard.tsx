@@ -12,7 +12,6 @@ import { TONE_CLASS } from '@/components/ui/Badge'
 import { AnimatedCounter } from '@/components/ui/AnimatedCounter'
 import { AnimatedBar } from '@/components/ui/AnimatedBar'
 import { DonutChart } from '@/components/ui/DonutChart'
-import { GradientBackground } from '@/components/ui/GradientBackground'
 
 interface CategoryCount {
   name: string
@@ -88,9 +87,8 @@ export function Dashboard() {
     <div className="p-8">
       <PageHeader kicker="Overview" title="Dashboard" />
 
-      {/* Bento grid — hero stat (glass panel over an animated Three.js
-          particle field) spans 2x2, status tiles fill the rest via dense
-          auto-flow so the count doesn't need to be exact. */}
+      {/* Bento grid — hero stat spans 2x2, status tiles fill the rest via
+          dense auto-flow so the count doesn't need to be exact. */}
       <div className="mb-8 grid grid-cols-2 gap-4 [grid-auto-flow:dense] sm:grid-cols-3 lg:grid-cols-4">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -99,13 +97,12 @@ export function Dashboard() {
           whileHover={{ scale: 1.01 }}
           className="relative col-span-2 row-span-2 overflow-hidden rounded-radius-xl border border-border bg-gradient-a"
         >
-          <GradientBackground className="absolute inset-0" />
-          <div className="relative z-10 flex h-full flex-col justify-between p-6 text-text-on-brand backdrop-blur-[2px]">
+          <div className="relative z-10 flex h-full flex-col justify-between p-6 text-text-on-brand">
             <div className="flex items-center gap-2">
               <Boxes className="h-6 w-6" strokeWidth={1.75} />
               <span className="text-sm opacity-90">Total assets</span>
             </div>
-            <div className="font-display text-6xl leading-none tracking-tight sm:text-7xl">
+            <div className="font-body text-6xl font-bold leading-none tracking-tight sm:text-7xl">
               {total === null ? (
                 <Skeleton className="h-16 w-32 bg-white/20" />
               ) : (
