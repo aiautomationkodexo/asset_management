@@ -1,10 +1,12 @@
 import { useState } from 'react'
+import { Trash2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { bookValue } from '@/lib/depreciation'
 import type { AssetWithRelations } from '@/types/asset'
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 export function DisposalPanel({ asset, onChanged }: { asset: AssetWithRelations; onChanged: () => void }) {
   const [open, setOpen] = useState(false)
@@ -20,10 +22,8 @@ export function DisposalPanel({ asset, onChanged }: { asset: AssetWithRelations;
 
   if (!open) {
     return (
-      <button
-        onClick={() => setOpen(true)}
-        className="mb-6 rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-      >
+      <button onClick={() => setOpen(true)} className={buttonClass('danger')}>
+        <Trash2 className="h-4 w-4" strokeWidth={1.75} />
         Dispose asset
       </button>
     )
@@ -61,33 +61,29 @@ export function DisposalPanel({ asset, onChanged }: { asset: AssetWithRelations;
   }
 
   return (
-    <div className="card-in mb-6 max-w-lg space-y-3 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
-      <h2 className="text-xl">Dispose asset</h2>
+    <Card className="card-in space-y-3 p-6">
+      <h2 className="text-h6">Dispose asset</h2>
       <div>
-        <label className={LABEL_CLASS}>Disposal date</label>
-        <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={FIELD_CLASS} />
+        <Label>Disposal date</Label>
+        <Input type="date" value={date} onChange={(e) => setDate(e.target.value)} />
       </div>
       <div>
-        <label className={LABEL_CLASS}>Method</label>
-        <input value={method} onChange={(e) => setMethod(e.target.value)} placeholder="Sold, scrapped, donated..." className={FIELD_CLASS} />
+        <Label>Method</Label>
+        <Input value={method} onChange={(e) => setMethod(e.target.value)} placeholder="Sold, scrapped, donated..." />
       </div>
       <div>
-        <label className={LABEL_CLASS}>Proceeds</label>
-        <input type="number" step="0.01" value={proceeds} onChange={(e) => setProceeds(e.target.value)} className={FIELD_CLASS} />
+        <Label>Proceeds</Label>
+        <Input type="number" step="0.01" value={proceeds} onChange={(e) => setProceeds(e.target.value)} />
       </div>
       {error && <p className="text-sm text-error-text">{error}</p>}
       <div className="flex gap-3">
-        <button
-          onClick={handleSubmit}
-          disabled={isSaving || !method}
-          className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-        >
+        <button onClick={handleSubmit} disabled={isSaving || !method} className={buttonClass('danger')}>
           {isSaving ? 'Saving...' : 'Confirm disposal'}
         </button>
-        <button onClick={() => setOpen(false)} className="text-sm text-text-secondary hover:underline">
+        <button onClick={() => setOpen(false)} className={buttonClass('tertiary')}>
           Cancel
         </button>
       </div>
-    </div>
+    </Card>
   )
 }

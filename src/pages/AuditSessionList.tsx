@@ -1,9 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ScanLine } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AuditSession } from '@/types/audit'
 import type { Location } from '@/types/asset'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Label } from '@/components/ui/Label'
+import { Select } from '@/components/ui/Select'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface SessionRow extends AuditSession {
   locations: { name: string } | null
@@ -46,35 +54,28 @@ export function AuditSessionList() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">Audit sweeps</h1>
+      <PageHeader kicker="Physical count" title="Audit sweeps" />
 
       {isAdmin && (
-        <div className="card-in mb-6 flex max-w-lg items-end gap-3 rounded-radius-lg border border-border bg-bg-elevated p-4 shadow-sm">
-          <div className="flex-1">
-            <label className="mb-1 block text-sm font-medium text-text-primary">Scope (optional)</label>
-            <select
-              value={locationId}
-              onChange={(e) => setLocationId(e.target.value)}
-              className="w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-            >
+        <Card className="card-in mb-6 flex max-w-lg flex-wrap items-end gap-3 p-4">
+          <div className="min-w-[200px] flex-1">
+            <Label>Scope (optional)</Label>
+            <Select value={locationId} onChange={(e) => setLocationId(e.target.value)}>
               <option value="">All locations</option>
               {locations.map((l) => (
                 <option key={l.id} value={l.id}>
                   {l.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
-          <button
-            onClick={startSession}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-          >
+          <button onClick={startSession} className={buttonClass('primary')}>
             Start session
           </button>
-        </div>
+        </Card>
       )}
 
-      <div className="max-w-2xl overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="max-w-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -92,26 +93,28 @@ export function AuditSessionList() {
               </tr>
             ) : sessions.length === 0 ? (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-text-secondary">
-                  No audit sessions yet.
+                <td colSpan={3}>
+                  <EmptyState icon={ScanLine} title="No audit sessions yet" description="Start one to begin a physical count." />
                 </td>
               </tr>
             ) : (
               sessions.map((s) => (
                 <tr key={s.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
-                    <Link to={`/audit/${s.id}`} className="text-brand-red hover:underline">
+                    <Link to={`/audit/${s.id}`} className="font-medium text-brand-red hover:underline">
                       {new Date(s.started_at).toLocaleString()}
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-text-primary">{s.locations?.name ?? 'All locations'}</td>
-                  <td className="px-4 py-3">{s.closed_at ? 'Closed' : 'Open'}</td>
+                  <td className="px-4 py-3">
+                    <Badge tone={s.closed_at ? 'neutral' : 'success'}>{s.closed_at ? 'Closed' : 'Open'}</Badge>
+                  </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

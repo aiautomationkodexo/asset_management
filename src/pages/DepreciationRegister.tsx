@@ -1,7 +1,12 @@
 import { useEffect, useState } from 'react'
+import { Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { bookValue, taxValue, periodStart } from '@/lib/depreciation'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Input } from '@/components/ui/Input'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface RegisterRow {
   asset_id: string
@@ -141,40 +146,34 @@ export function DepreciationRegister() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">Depreciation register</h1>
+      <PageHeader kicker="Finance" title="Depreciation register" />
 
       {isAdmin && (
-        <div className="mb-6 max-w-2xl rounded-radius-lg border border-border bg-bg-elevated p-4 shadow-sm">
-          <h2 className="mb-2 text-sm font-medium text-text-secondary">Per-category tax depreciation rate (annual %)</h2>
+        <Card className="mb-6 max-w-2xl p-4">
+          <h2 className="text-body-sm mb-2 font-medium text-text-secondary">Per-category tax depreciation rate (annual %)</h2>
           <div className="flex flex-wrap gap-3">
             {categories.map((c) => (
               <CategoryRateInput key={c.id} category={c} onSave={saveTaxRate} />
             ))}
           </div>
-        </div>
+        </Card>
       )}
 
       <div className="mb-4 flex gap-3">
         {isAdmin && (
-          <button
-            onClick={runMonthEndClose}
-            disabled={isRunning}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-          >
+          <button onClick={runMonthEndClose} disabled={isRunning} className={buttonClass('primary')}>
             {isRunning ? 'Running...' : 'Run month-end close'}
           </button>
         )}
-        <button
-          onClick={exportCsv}
-          className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-        >
+        <button onClick={exportCsv} className={buttonClass('tertiary')}>
+          <Download className="h-4 w-4" strokeWidth={1.75} />
           Export CSV
         </button>
       </div>
 
       {message && <p className="mb-4 text-sm text-success-text">{message}</p>}
 
-      <div className="overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -194,7 +193,7 @@ export function DepreciationRegister() {
               </tr>
             ) : (
               rows.map((r) => (
-                <tr key={r.asset_id} className="border-b border-divider last:border-0">
+                <tr key={r.asset_id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
                     <code>{r.asset_tag}</code>
                   </td>
@@ -207,7 +206,7 @@ export function DepreciationRegister() {
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }
@@ -225,13 +224,13 @@ function CategoryRateInput({
   return (
     <div className="flex items-center gap-1 text-sm">
       <span className="text-text-secondary">{category.name}</span>
-      <input
+      <Input
         type="number"
         step="0.1"
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onBlur={() => onSave(category.id, value)}
-        className="w-16 rounded-radius-md border border-border bg-bg px-2 py-1 text-text-primary"
+        className="w-16 py-1"
       />
       <span className="text-text-tertiary">%</span>
     </div>

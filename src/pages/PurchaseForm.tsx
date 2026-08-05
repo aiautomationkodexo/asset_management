@@ -2,6 +2,11 @@ import { useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface AssetOption {
   id: string
@@ -14,9 +19,6 @@ interface LinkedAsset {
   asset_tag: string
   unit_cost: string
 }
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
 
 export function PurchaseForm() {
   const navigate = useNavigate()
@@ -117,99 +119,75 @@ export function PurchaseForm() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">Record purchase</h1>
+      <h1 className="text-h3 mb-6">Record purchase</h1>
 
-      <form onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
+      <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Vendor *</label>
-            <input value={vendor} onChange={(e) => setVendor(e.target.value)} required className={FIELD_CLASS} />
+            <Label>Vendor *</Label>
+            <Input value={vendor} onChange={(e) => setVendor(e.target.value)} required />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Invoice number</label>
-            <input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} className={FIELD_CLASS} />
+            <Label>Invoice number</Label>
+            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Purchase date *</label>
-            <input
-              type="date"
-              value={purchaseDate}
-              onChange={(e) => setPurchaseDate(e.target.value)}
-              required
-              className={FIELD_CLASS}
-            />
+            <Label>Purchase date *</Label>
+            <Input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} required />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Warranty until</label>
-            <input
-              type="date"
-              value={warrantyUntil}
-              onChange={(e) => setWarrantyUntil(e.target.value)}
-              className={FIELD_CLASS}
-            />
+            <Label>Warranty until</Label>
+            <Input type="date" value={warrantyUntil} onChange={(e) => setWarrantyUntil(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-3 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Currency</label>
-            <input value={currency} onChange={(e) => setCurrency(e.target.value)} className={FIELD_CLASS} />
+            <Label>Currency</Label>
+            <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Amount *</label>
-            <input
-              type="number"
-              step="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              required
-              className={FIELD_CLASS}
-            />
+            <Label>Amount *</Label>
+            <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
           </div>
           <div>
-            <label className={LABEL_CLASS}>FX rate</label>
-            <input
-              type="number"
-              step="0.0001"
-              value={fxRate}
-              onChange={(e) => setFxRate(e.target.value)}
-              className={FIELD_CLASS}
-            />
+            <Label>FX rate</Label>
+            <Input type="number" step="0.0001" value={fxRate} onChange={(e) => setFxRate(e.target.value)} />
           </div>
         </div>
 
         <div>
-          <label className={LABEL_CLASS}>Invoice file</label>
-          <input type="file" onChange={handleFile} className={FIELD_CLASS} />
+          <Label>Invoice file</Label>
+          <input
+            type="file"
+            onChange={handleFile}
+            className="w-full rounded-radius-sm border border-border bg-bg px-3 py-2 text-sm text-text-primary"
+          />
         </div>
 
         <div className="border-t border-divider pt-4">
-          <label className={LABEL_CLASS}>Link assets (each with its own unit cost)</label>
+          <Label>Link assets (each with its own unit cost)</Label>
           <div className="mb-2 flex gap-2">
-            <select value={pickAssetId} onChange={(e) => setPickAssetId(e.target.value)} className={FIELD_CLASS}>
+            <Select value={pickAssetId} onChange={(e) => setPickAssetId(e.target.value)}>
               <option value="">Select asset</option>
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>
                   {a.asset_tag}
                 </option>
               ))}
-            </select>
-            <input
+            </Select>
+            <Input
               type="number"
               step="0.01"
               placeholder="Unit cost"
               value={pickUnitCost}
               onChange={(e) => setPickUnitCost(e.target.value)}
-              className={`${FIELD_CLASS} w-32`}
+              className="w-32"
             />
-            <button
-              type="button"
-              onClick={addLinkedAsset}
-              className="rounded-radius-md border border-border bg-bg-alt px-3 py-2 text-sm font-medium text-text-primary hover:bg-border"
-            >
+            <button type="button" onClick={addLinkedAsset} className={buttonClass('tertiary')}>
               Add
             </button>
           </div>
@@ -235,14 +213,10 @@ export function PurchaseForm() {
 
         {error && <p className="text-sm text-error-text">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSaving} className={buttonClass('primary')}>
           {isSaving ? 'Saving...' : 'Create purchase'}
         </button>
-      </form>
+      </Card>
     </div>
   )
 }

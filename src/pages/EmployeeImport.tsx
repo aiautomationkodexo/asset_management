@@ -12,9 +12,11 @@ import {
   autoMapEmployeeColumns,
   validateEmployeeRows,
 } from '@/lib/employeeImport'
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Select } from '@/components/ui/Select'
+import { Badge } from '@/components/ui/Badge'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 type Step = 'upload' | 'mapping' | 'preview' | 'done'
 
@@ -111,32 +113,36 @@ export function EmployeeImport() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">Bulk import employees</h1>
+      <h1 className="text-h3 mb-6">Bulk import employees</h1>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
       {step === 'upload' && (
-        <div className="card-in max-w-lg space-y-4 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
+        <Card className="card-in max-w-lg space-y-4 p-6">
           <p className="text-sm text-text-secondary">
             Upload a CSV. Existing employees are matched by employee code and updated; new codes are inserted.
             Employees missing from the file are left untouched — never deleted.
           </p>
-          <input type="file" accept=".csv,text/csv" onChange={handleFile} className={FIELD_CLASS} />
-        </div>
+          <input
+            type="file"
+            accept=".csv,text/csv"
+            onChange={handleFile}
+            className="w-full rounded-radius-sm border border-border bg-bg px-3 py-2 text-sm text-text-primary"
+          />
+        </Card>
       )}
 
       {step === 'mapping' && (
-        <div className="card-in max-w-lg space-y-4 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
+        <Card className="card-in max-w-lg space-y-4 p-6">
           <p className="text-sm text-text-secondary">
             {fileName} — {rows.length} row{rows.length === 1 ? '' : 's'}.
           </p>
           {EMPLOYEE_IMPORT_FIELDS.map((field) => (
             <div key={field}>
-              <label className={LABEL_CLASS}>{EMPLOYEE_IMPORT_FIELD_LABELS[field]}</label>
-              <select
+              <Label>{EMPLOYEE_IMPORT_FIELD_LABELS[field]}</Label>
+              <Select
                 value={mapping[field] ?? ''}
                 onChange={(e) => setMapping((prev) => ({ ...prev, [field]: e.target.value || undefined }))}
-                className={FIELD_CLASS}
               >
                 <option value="">— not mapped —</option>
                 {headers.map((h) => (
@@ -144,38 +150,28 @@ export function EmployeeImport() {
                     {h}
                   </option>
                 ))}
-              </select>
+              </Select>
             </div>
           ))}
           <div className="flex gap-3 pt-2">
-            <button
-              onClick={runDryRun}
-              disabled={isBusy}
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-            >
+            <button onClick={runDryRun} disabled={isBusy} className={buttonClass('primary')}>
               {isBusy ? 'Validating...' : 'Preview import'}
             </button>
           </div>
-        </div>
+        </Card>
       )}
 
       {step === 'preview' && (
         <div className="space-y-4">
-          <div className="flex gap-4 text-sm">
-            <span className="rounded-radius-pill border border-success-border bg-success-bg px-3 py-1 text-success-text">
-              {insertCount} new
-            </span>
-            <span className="rounded-radius-pill border border-info-border bg-info-bg px-3 py-1 text-info-text">
-              {updateCount} update
-            </span>
-            <span className="rounded-radius-pill border border-error-border bg-error-bg px-3 py-1 text-error-text">
-              {errorCount} error
-            </span>
+          <div className="flex gap-3">
+            <Badge tone="success">{insertCount} new</Badge>
+            <Badge tone="info">{updateCount} update</Badge>
+            <Badge tone="error">{errorCount} error</Badge>
           </div>
 
-          <div className="max-h-96 overflow-auto rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+          <Card className="max-h-96 overflow-auto">
             <table className="w-full text-sm">
-              <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
+              <thead className="sticky top-0 border-b border-border bg-bg-alt text-left text-text-secondary">
                 <tr>
                   <th className="px-3 py-2 font-medium">Row</th>
                   <th className="px-3 py-2 font-medium">Code</th>
@@ -190,18 +186,18 @@ export function EmployeeImport() {
                     <td className="px-3 py-2 text-text-primary">{r.rowNumber}</td>
                     <td className="px-3 py-2 text-text-primary">{r.mapped.employee_code}</td>
                     <td className="px-3 py-2 text-text-primary">{r.mapped.name}</td>
-                    <td className="px-3 py-2">{r.status}</td>
+                    <td className="px-3 py-2 text-text-primary">{r.status}</td>
                     <td className="px-3 py-2 text-text-secondary">{r.reasons.join('; ')}</td>
                   </tr>
                 ))}
               </tbody>
             </table>
-          </div>
+          </Card>
 
           <button
             onClick={commitImport}
             disabled={isBusy || insertCount + updateCount === 0}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
+            className={buttonClass('primary')}
           >
             {isBusy ? 'Importing...' : `Commit import (${insertCount + updateCount})`}
           </button>
@@ -209,7 +205,7 @@ export function EmployeeImport() {
       )}
 
       {step === 'done' && summary && (
-        <div className="card-in max-w-lg space-y-3 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
+        <Card className="card-in max-w-lg space-y-3 p-6">
           <p className="text-text-primary">
             Inserted <strong>{summary.inserted}</strong>, updated <strong>{summary.updated}</strong>.
           </p>
@@ -231,13 +227,10 @@ export function EmployeeImport() {
               </ul>
             </div>
           )}
-          <button
-            onClick={() => navigate('/employees')}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-          >
+          <button onClick={() => navigate('/employees')} className={buttonClass('primary')}>
             Go to employees
           </button>
-        </div>
+        </Card>
       )}
     </div>
   )

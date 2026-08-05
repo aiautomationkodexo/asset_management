@@ -1,6 +1,10 @@
 import { useEffect, useState } from 'react'
+import { Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import { downloadCsv } from '@/lib/csv'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface ValueByCategory {
   category: string
@@ -146,7 +150,7 @@ export function Reports() {
 
   return (
     <div className="p-8 space-y-8">
-      <h1 className="text-3xl">Reports</h1>
+      <PageHeader kicker="Insights" title="Reports" />
 
       <ReportCard
         title="What we own & its value — by category"
@@ -231,15 +235,16 @@ function ReportCard<T extends object>({
   return (
     <div>
       <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-lg">{title}</h2>
+        <h2 className="text-h6">{title}</h2>
         <button
           onClick={() => downloadCsv(filename, rows as unknown as Array<Record<string, unknown>>)}
-          className="text-sm text-brand-red hover:underline"
+          className={buttonClass('tertiary')}
         >
+          <Download className="h-4 w-4" strokeWidth={1.75} />
           Export CSV
         </button>
       </div>
-      <div className="max-w-2xl overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="max-w-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -259,7 +264,7 @@ function ReportCard<T extends object>({
               </tr>
             ) : (
               rows.map((row, i) => (
-                <tr key={i} className="border-b border-divider last:border-0">
+                <tr key={i} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   {columns.map(([key]) => (
                     <td key={String(key)} className="px-4 py-2 text-text-primary">
                       {typeof row[key] === 'number' ? (row[key] as number).toFixed(2) : String(row[key])}
@@ -270,7 +275,7 @@ function ReportCard<T extends object>({
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

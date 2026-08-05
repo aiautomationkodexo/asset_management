@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import type { Purchase } from '@/types/finance'
+import { Card } from '@/components/ui/Card'
 
 interface LinkedAsset {
   id: string
@@ -33,7 +34,7 @@ export function PurchaseDetail() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-2 text-3xl">{purchase.vendor}</h1>
+      <h1 className="text-h3 mb-2">{purchase.vendor}</h1>
       <p className="mb-6 text-sm text-text-secondary">
         Invoice {purchase.invoice_number ?? '—'} · {purchase.purchase_date} · {purchase.currency}{' '}
         {purchase.amount.toFixed(2)} (fx {purchase.fx_rate})
@@ -50,8 +51,8 @@ export function PurchaseDetail() {
         </a>
       )}
 
-      <h2 className="mb-3 text-xl">Linked assets ({assets.length})</h2>
-      <div className="max-w-lg overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <h2 className="text-h6 mb-3">Linked assets ({assets.length})</h2>
+      <Card className="max-w-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -78,7 +79,7 @@ export function PurchaseDetail() {
             </tr>
           </tfoot>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

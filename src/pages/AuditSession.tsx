@@ -1,7 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
+import { Camera, CircleX } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AuditSession as AuditSessionType, AuditScan } from '@/types/audit'
+import { Card } from '@/components/ui/Card'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface ExpectedAsset {
   id: string
@@ -121,37 +124,34 @@ export function AuditSession() {
   if (!session) return <div className="p-8 text-text-secondary">Loading...</div>
 
   return (
-    <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl">Audit sweep</h1>
+    <div className="p-4 sm:p-8">
+      <div className="mb-6 flex items-center justify-between gap-3">
+        <h1 className="text-h4">Audit sweep</h1>
         {!session.closed_at && (
-          <button
-            onClick={closeSession}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-          >
+          <button onClick={closeSession} className={buttonClass('primary')}>
             Close session
           </button>
         )}
         {session.closed_at && (
-          <Link to={`/audit/${id}/report`} className="text-sm text-brand-red hover:underline">
+          <Link to={`/audit/${id}/report`} className="text-sm font-medium text-brand-red hover:underline">
             View closing report
           </Link>
         )}
       </div>
 
-      <div className="mb-6 grid grid-cols-3 gap-4 sm:max-w-md">
-        <div className="rounded-radius-lg border border-border bg-bg-elevated p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-text-strong">{expected.length}</p>
+      <div className="mb-6 grid grid-cols-3 gap-3 sm:max-w-md">
+        <Card className="p-4 text-center">
+          <p className="font-body text-2xl font-bold text-text-strong">{expected.length}</p>
           <p className="text-xs text-text-secondary">Expected</p>
-        </div>
-        <div className="rounded-radius-lg border border-border bg-bg-elevated p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-success-text">{scannedCount}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="font-body text-2xl font-bold text-success-text">{scannedCount}</p>
           <p className="text-xs text-text-secondary">Scanned</p>
-        </div>
-        <div className="rounded-radius-lg border border-border bg-bg-elevated p-4 text-center shadow-sm">
-          <p className="text-2xl font-bold text-warning-text">{remaining}</p>
+        </Card>
+        <Card className="p-4 text-center">
+          <p className="font-body text-2xl font-bold text-warning-text">{remaining}</p>
           <p className="text-xs text-text-secondary">Remaining</p>
-        </div>
+        </Card>
       </div>
 
       {!session.closed_at && (
@@ -165,13 +165,11 @@ export function AuditSession() {
             }}
             placeholder="Scan or type public slug, then Enter"
             autoFocus
-            className="w-full rounded-radius-md border border-border bg-bg px-3 py-3 text-lg text-text-primary"
+            className="w-full rounded-radius-md border border-border bg-bg px-4 py-4 text-lg text-text-primary outline-none focus:border-brand-red focus:ring-2 focus:ring-brand-red/20"
           />
           {cameraSupported && (
-            <button
-              onClick={() => setCameraOn((v) => !v)}
-              className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-            >
+            <button onClick={() => setCameraOn((v) => !v)} className={buttonClass('tertiary', 'w-full py-3')}>
+              {cameraOn ? <CircleX className="h-4 w-4" strokeWidth={1.75} /> : <Camera className="h-4 w-4" strokeWidth={1.75} />}
               {cameraOn ? 'Stop camera' : 'Use camera'}
             </button>
           )}
@@ -180,14 +178,15 @@ export function AuditSession() {
         </div>
       )}
 
-      <h2 className="mb-2 text-lg">Recent scans</h2>
-      <ul className="max-w-md space-y-1 text-sm">
+      <h2 className="text-h6 mb-2">Recent scans</h2>
+      <Card className="max-w-md divide-y divide-divider p-2 text-sm">
         {scans.slice(0, 15).map((s) => (
-          <li key={s.id} className={s.asset_id ? 'text-text-primary' : 'text-error-text'}>
-            {s.scanned_slug} — {new Date(s.scanned_at).toLocaleTimeString()}
-          </li>
+          <div key={s.id} className={`flex items-center justify-between px-2 py-2 ${s.asset_id ? 'text-text-primary' : 'text-error-text'}`}>
+            <code>{s.scanned_slug}</code>
+            <span className="text-text-tertiary">{new Date(s.scanned_at).toLocaleTimeString()}</span>
+          </div>
         ))}
-      </ul>
+      </Card>
     </div>
   )
 }

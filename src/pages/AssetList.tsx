@@ -1,11 +1,20 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Search, Plus, Upload, Printer, Boxes } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AssetCategory, AssetWithRelations } from '@/types/asset'
 import { ASSET_STATUSES } from '@/types/asset'
-import { ASSET_STATUS_LABELS, ASSET_STATUS_STYLE } from '@/lib/assetStatusStyle'
+import { ASSET_STATUS_LABELS, ASSET_STATUS_TONE } from '@/lib/assetStatusStyle'
 import { generateLabelsPdf } from '@/lib/labelPdf'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { buttonClass } from '@/components/ui/buttonStyles'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
 
 export function AssetList() {
   const { isAdmin } = useSimpleAuth()
@@ -95,141 +104,156 @@ export function AssetList() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl">Assets</h1>
-        <div className="flex items-center gap-3">
-          {selectedIds.size > 0 && (
-            <button
-              onClick={handlePrintLabels}
-              disabled={isPrinting}
-              className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border disabled:opacity-50"
-            >
-              {isPrinting ? 'Generating...' : `Print labels (${selectedIds.size})`}
-            </button>
-          )}
-          {isAdmin && (
-            <>
-              <Link
-                to="/assets/import"
-                className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-              >
-                Bulk import
-              </Link>
-              <Link
-                to="/assets/new"
-                className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-              >
-                Add asset
-              </Link>
-            </>
-          )}
-        </div>
-      </div>
+      <PageHeader
+        kicker="Inventory"
+        title="Assets"
+        actions={
+          <>
+            {selectedIds.size > 0 && (
+              <button onClick={handlePrintLabels} disabled={isPrinting} className={buttonClass('tertiary')}>
+                <Printer className="h-4 w-4" strokeWidth={1.75} />
+                {isPrinting ? 'Generating...' : `Print labels (${selectedIds.size})`}
+              </button>
+            )}
+            {isAdmin && (
+              <>
+                <Link to="/assets/import" className={buttonClass('tertiary')}>
+                  <Upload className="h-4 w-4" strokeWidth={1.75} />
+                  Bulk import
+                </Link>
+                <Link to="/assets/new" className={buttonClass('primary')}>
+                  <Plus className="h-4 w-4" strokeWidth={1.75} />
+                  Add asset
+                </Link>
+              </>
+            )}
+          </>
+        }
+      />
 
       <div className="mb-4 flex flex-wrap gap-3">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search tag, make, model, serial..."
-          className="w-64 rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-        >
+        <div className="relative w-64">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search tag, make, model, serial..."
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-auto">
           <option value="">All statuses</option>
           {ASSET_STATUSES.map((status) => (
             <option key={status} value={status}>
               {ASSET_STATUS_LABELS[status]}
             </option>
           ))}
-        </select>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-        >
+        </Select>
+        <Select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="w-auto">
           <option value="">All categories</option>
           {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
-      <div className="overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
-        <table className="w-full text-sm">
-          <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
-            <tr>
-              <th className="px-4 py-3 font-medium">
-                <input
-                  type="checkbox"
-                  checked={assets.length > 0 && selectedIds.size === assets.length}
-                  onChange={toggleSelectAll}
-                  aria-label="Select all assets"
-                />
-              </th>
-              <th className="px-4 py-3 font-medium">Tag</th>
-              <th className="px-4 py-3 font-medium">Category</th>
-              <th className="px-4 py-3 font-medium">Make / Model</th>
-              <th className="px-4 py-3 font-medium">Status</th>
-              <th className="px-4 py-3 font-medium">Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            {isLoading ? (
+      <Card className="overflow-hidden">
+        <div className="max-h-[70vh] overflow-auto">
+          <table className="w-full text-sm">
+            <thead className="sticky top-0 z-10 border-b border-border bg-bg-alt text-left text-text-secondary">
               <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-text-secondary">
-                  Loading...
-                </td>
+                <th className="px-4 py-3 font-medium">
+                  <input
+                    type="checkbox"
+                    checked={assets.length > 0 && selectedIds.size === assets.length}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all assets"
+                  />
+                </th>
+                <th className="px-4 py-3 font-medium">Tag</th>
+                <th className="px-4 py-3 font-medium">Category</th>
+                <th className="px-4 py-3 font-medium">Make / Model</th>
+                <th className="px-4 py-3 font-medium">Status</th>
+                <th className="px-4 py-3 font-medium">Location</th>
               </tr>
-            ) : assets.length === 0 ? (
-              <tr>
-                <td colSpan={6} className="px-4 py-6 text-center text-text-secondary">
-                  No assets found.
-                </td>
-              </tr>
-            ) : (
-              assets.map((asset) => (
-                <tr
-                  key={asset.id}
-                  className="card-in border-b border-divider last:border-0 hover:bg-bg-alt"
-                >
-                  <td className="px-4 py-3">
-                    <input
-                      type="checkbox"
-                      checked={selectedIds.has(asset.id)}
-                      onChange={() => toggleSelected(asset.id)}
-                      aria-label={`Select ${asset.asset_tag}`}
+            </thead>
+            <tbody>
+              {isLoading ? (
+                Array.from({ length: 6 }).map((_, i) => (
+                  <tr key={i} className="border-b border-divider last:border-0">
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-4" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-20" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-32" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-5 w-16 rounded-radius-pill" />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Skeleton className="h-4 w-24" />
+                    </td>
+                  </tr>
+                ))
+              ) : assets.length === 0 ? (
+                <tr>
+                  <td colSpan={6}>
+                    <EmptyState
+                      icon={Boxes}
+                      title="No assets found"
+                      description={search || statusFilter || categoryFilter ? 'Try clearing a filter.' : 'Add the first asset to the register.'}
+                      action={
+                        isAdmin && (
+                          <Link to="/assets/new" className={buttonClass('primary')}>
+                            <Plus className="h-4 w-4" strokeWidth={1.75} />
+                            Add asset
+                          </Link>
+                        )
+                      }
                     />
                   </td>
-                  <td className="px-4 py-3">
-                    <Link to={`/assets/${asset.id}`} className="font-medium text-brand-red hover:underline">
-                      <code>{asset.asset_tag}</code>
-                    </Link>
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">{asset.asset_categories?.name ?? '—'}</td>
-                  <td className="px-4 py-3 text-text-primary">
-                    {[asset.make, asset.model].filter(Boolean).join(' ') || '—'}
-                  </td>
-                  <td className="px-4 py-3">
-                    <span
-                      className={`rounded-radius-pill border px-2 py-0.5 text-xs font-medium ${ASSET_STATUS_STYLE[asset.status]}`}
-                    >
-                      {ASSET_STATUS_LABELS[asset.status]}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3 text-text-primary">{asset.locations?.name ?? '—'}</td>
                 </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+              ) : (
+                assets.map((asset) => (
+                  <tr key={asset.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
+                    <td className="px-4 py-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(asset.id)}
+                        onChange={() => toggleSelected(asset.id)}
+                        aria-label={`Select ${asset.asset_tag}`}
+                      />
+                    </td>
+                    <td className="px-4 py-3">
+                      <Link to={`/assets/${asset.id}`} className="font-medium text-brand-red hover:underline">
+                        <code>{asset.asset_tag}</code>
+                      </Link>
+                    </td>
+                    <td className="px-4 py-3 text-text-primary">{asset.asset_categories?.name ?? '—'}</td>
+                    <td className="px-4 py-3 text-text-primary">
+                      {[asset.make, asset.model].filter(Boolean).join(' ') || '—'}
+                    </td>
+                    <td className="px-4 py-3">
+                      <Badge tone={ASSET_STATUS_TONE[asset.status]}>{ASSET_STATUS_LABELS[asset.status]}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-text-primary">{asset.locations?.name ?? '—'}</td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
+      </Card>
     </div>
   )
 }

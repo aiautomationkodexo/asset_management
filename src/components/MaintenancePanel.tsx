@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Wrench } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { MaintenanceLog, MaintenanceLogType } from '@/types/maintenance'
 import { MAINTENANCE_LOG_TYPES } from '@/types/maintenance'
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
+import { Card } from '@/components/ui/Card'
+import { Select } from '@/components/ui/Select'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 export function MaintenancePanel({
   assetId,
@@ -84,11 +88,12 @@ export function MaintenancePanel({
   }
 
   return (
-    <div className="card-in mb-6 max-w-lg rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
+    <Card className="card-in p-6">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-xl">Maintenance</h2>
+        <h2 className="text-h6">Maintenance</h2>
         {isAdmin && !open && (
-          <button onClick={() => setOpen(true)} className="text-sm text-brand-red hover:underline">
+          <button onClick={() => setOpen(true)} className={buttonClass('tertiary')}>
+            <Wrench className="h-4 w-4" strokeWidth={1.75} />
             Log maintenance
           </button>
         )}
@@ -101,41 +106,38 @@ export function MaintenancePanel({
       </p>
 
       {open && (
-        <div className="mb-4 space-y-2 border-b border-divider pb-4">
-          <div className="grid grid-cols-2 gap-2">
-            <select value={logType} onChange={(e) => setLogType(e.target.value as MaintenanceLogType)} className={FIELD_CLASS}>
+        <div className="mb-4 space-y-3 border-t border-divider pt-4">
+          <div className="grid grid-cols-2 gap-3">
+            <Select value={logType} onChange={(e) => setLogType(e.target.value as MaintenanceLogType)}>
               {MAINTENANCE_LOG_TYPES.map((t) => (
                 <option key={t} value={t}>
                   {t}
                 </option>
               ))}
-            </select>
-            <input placeholder="Vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} className={FIELD_CLASS} />
+            </Select>
+            <Input placeholder="Vendor" value={vendor} onChange={(e) => setVendor(e.target.value)} />
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <input
+          <div className="grid grid-cols-2 gap-3">
+            <Input
               type="number"
               step="0.01"
               placeholder="Cost"
               value={cost}
               onChange={(e) => setCost(e.target.value)}
-              className={FIELD_CLASS}
             />
-            <input
+            <Input
               type="number"
               step="0.5"
               placeholder="Downtime (hours)"
               value={downtimeHours}
               onChange={(e) => setDowntimeHours(e.target.value)}
-              className={FIELD_CLASS}
             />
           </div>
-          <textarea
+          <Textarea
             placeholder="Description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
             rows={2}
-            className={FIELD_CLASS}
           />
           <label className="flex items-center gap-2 text-sm text-text-secondary">
             <input type="checkbox" checked={stillOpen} onChange={(e) => setStillOpen(e.target.checked)} />
@@ -143,14 +145,10 @@ export function MaintenancePanel({
           </label>
           {error && <p className="text-sm text-error-text">{error}</p>}
           <div className="flex gap-3">
-            <button
-              onClick={handleSubmit}
-              disabled={isSaving}
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-            >
+            <button onClick={handleSubmit} disabled={isSaving} className={buttonClass('primary')}>
               {isSaving ? 'Saving...' : 'Save log'}
             </button>
-            <button onClick={() => setOpen(false)} className="text-sm text-text-secondary hover:underline">
+            <button onClick={() => setOpen(false)} className={buttonClass('tertiary')}>
               Cancel
             </button>
           </div>
@@ -162,18 +160,18 @@ export function MaintenancePanel({
           <tbody>
             {logs.map((l) => (
               <tr key={l.id} className="border-b border-divider last:border-0">
-                <td className="py-1 pr-3 text-text-secondary">{l.log_date}</td>
-                <td className="py-1 pr-3 capitalize text-text-primary">{l.log_type}</td>
-                <td className="py-1 pr-3 text-text-primary">{l.cost.toFixed(2)}</td>
-                <td className="py-1">
+                <td className="py-1.5 pr-3 text-text-secondary">{l.log_date}</td>
+                <td className="py-1.5 pr-3 capitalize text-text-primary">{l.log_type}</td>
+                <td className="py-1.5 pr-3 text-text-primary">{l.cost.toFixed(2)}</td>
+                <td className="py-1.5">
                   {l.resolved_at ? (
-                    'Resolved'
+                    <span className="text-text-secondary">Resolved</span>
                   ) : isAdmin ? (
-                    <button onClick={() => resolveLog(l.id)} className="text-brand-red hover:underline">
+                    <button onClick={() => resolveLog(l.id)} className="font-medium text-brand-red hover:underline">
                       Mark resolved
                     </button>
                   ) : (
-                    'Open'
+                    <span className="text-text-secondary">Open</span>
                   )}
                 </td>
               </tr>
@@ -183,6 +181,6 @@ export function MaintenancePanel({
       ) : (
         <p className="text-sm text-text-secondary">No maintenance logged.</p>
       )}
-    </div>
+    </Card>
   )
 }

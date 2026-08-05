@@ -1,11 +1,17 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { ArrowRightLeft, PackageCheck, Undo2 } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AssetCondition, AssetStatus } from '@/types/asset'
 import { ASSET_CONDITIONS } from '@/types/asset'
 import type { Assignment } from '@/types/custody'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { SignaturePad } from '@/components/SignaturePad'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface EmployeeOption {
   id: string
@@ -16,9 +22,6 @@ interface EmployeeOption {
 interface AssignmentRow extends Assignment {
   employees: { name: string } | null
 }
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
 
 export function CustodyPanel({
   assetId,
@@ -163,13 +166,13 @@ export function CustodyPanel({
   }
 
   return (
-    <div className="card-in mb-6 max-w-lg rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
-      <h2 className="mb-3 text-xl">Custody</h2>
+    <Card className="card-in p-6">
+      <h2 className="text-h6 mb-3">Custody</h2>
 
       {openAssignment ? (
         <p className="mb-3 text-sm text-text-secondary">
           Currently held by{' '}
-          <Link to={`/employees/${openAssignment.employee_id}`} className="text-brand-red hover:underline">
+          <Link to={`/employees/${openAssignment.employee_id}`} className="font-medium text-brand-red hover:underline">
             {openAssignment.employees?.name}
           </Link>{' '}
           since {new Date(openAssignment.assigned_at).toLocaleDateString()}.
@@ -179,27 +182,21 @@ export function CustodyPanel({
       )}
 
       {isAdmin && mode === 'none' && (
-        <div className="flex gap-3">
+        <div className="flex flex-wrap gap-3">
           {assetStatus === 'in_stock' && (
-            <button
-              onClick={() => setMode('assign')}
-              className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-            >
+            <button onClick={() => setMode('assign')} className={buttonClass('primary')}>
+              <PackageCheck className="h-4 w-4" strokeWidth={1.75} />
               Assign
             </button>
           )}
           {assetStatus === 'assigned' && openAssignment && (
             <>
-              <button
-                onClick={() => setMode('return')}
-                className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-              >
+              <button onClick={() => setMode('return')} className={buttonClass('primary')}>
+                <Undo2 className="h-4 w-4" strokeWidth={1.75} />
                 Return
               </button>
-              <button
-                onClick={() => setMode('transfer')}
-                className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-              >
+              <button onClick={() => setMode('transfer')} className={buttonClass('tertiary')}>
+                <ArrowRightLeft className="h-4 w-4" strokeWidth={1.75} />
                 Transfer
               </button>
             </>
@@ -208,46 +205,38 @@ export function CustodyPanel({
       )}
 
       {mode === 'assign' && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
-            <label className={LABEL_CLASS}>Employee</label>
-            <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={FIELD_CLASS}>
+            <Label>Employee</Label>
+            <Select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
               <option value="">Select employee</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
                   {emp.name} ({emp.employee_code})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Condition going out</label>
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value as AssetCondition)}
-              className={FIELD_CLASS}
-            >
+            <Label>Condition going out</Label>
+            <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Signature</label>
+            <Label>Signature</Label>
             <SignaturePad value={signature} onChange={setSignature} />
           </div>
           {error && <p className="text-sm text-error-text">{error}</p>}
           <div className="flex gap-3">
-            <button
-              onClick={handleAssign}
-              disabled={isSaving}
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-            >
+            <button onClick={handleAssign} disabled={isSaving} className={buttonClass('primary')}>
               {isSaving ? 'Saving...' : 'Confirm assign'}
             </button>
-            <button onClick={resetForm} className="text-sm text-text-secondary hover:underline">
+            <button onClick={resetForm} className={buttonClass('tertiary')}>
               Cancel
             </button>
           </div>
@@ -255,51 +244,34 @@ export function CustodyPanel({
       )}
 
       {mode === 'return' && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
-            <label className={LABEL_CLASS}>Condition coming back</label>
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value as AssetCondition)}
-              className={FIELD_CLASS}
-            >
+            <Label>Condition coming back</Label>
+            <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Damage notes</label>
-            <textarea
-              value={damageNotes}
-              onChange={(e) => setDamageNotes(e.target.value)}
-              rows={2}
-              className={FIELD_CLASS}
-            />
+            <Label>Damage notes</Label>
+            <Textarea value={damageNotes} onChange={(e) => setDamageNotes(e.target.value)} rows={2} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Resulting status</label>
-            <select
-              value={returnStatus}
-              onChange={(e) => setReturnStatus(e.target.value as 'in_stock' | 'in_repair')}
-              className={FIELD_CLASS}
-            >
+            <Label>Resulting status</Label>
+            <Select value={returnStatus} onChange={(e) => setReturnStatus(e.target.value as 'in_stock' | 'in_repair')}>
               <option value="in_stock">In stock</option>
               <option value="in_repair">In repair</option>
-            </select>
+            </Select>
           </div>
           {error && <p className="text-sm text-error-text">{error}</p>}
           <div className="flex gap-3">
-            <button
-              onClick={handleReturn}
-              disabled={isSaving}
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-            >
+            <button onClick={handleReturn} disabled={isSaving} className={buttonClass('primary')}>
               {isSaving ? 'Saving...' : 'Confirm return'}
             </button>
-            <button onClick={resetForm} className="text-sm text-text-secondary hover:underline">
+            <button onClick={resetForm} className={buttonClass('tertiary')}>
               Cancel
             </button>
           </div>
@@ -307,46 +279,38 @@ export function CustodyPanel({
       )}
 
       {mode === 'transfer' && (
-        <div className="mt-4 space-y-3">
+        <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
-            <label className={LABEL_CLASS}>New employee</label>
-            <select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)} className={FIELD_CLASS}>
+            <Label>New employee</Label>
+            <Select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
               <option value="">Select employee</option>
               {employees.map((emp) => (
                 <option key={emp.id} value={emp.id}>
                   {emp.name} ({emp.employee_code})
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Condition at transfer</label>
-            <select
-              value={condition}
-              onChange={(e) => setCondition(e.target.value as AssetCondition)}
-              className={FIELD_CLASS}
-            >
+            <Label>Condition at transfer</Label>
+            <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
                   {c}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>New signature</label>
+            <Label>New signature</Label>
             <SignaturePad value={signature} onChange={setSignature} />
           </div>
           {error && <p className="text-sm text-error-text">{error}</p>}
           <div className="flex gap-3">
-            <button
-              onClick={handleTransfer}
-              disabled={isSaving}
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-            >
+            <button onClick={handleTransfer} disabled={isSaving} className={buttonClass('primary')}>
               {isSaving ? 'Saving...' : 'Confirm transfer'}
             </button>
-            <button onClick={resetForm} className="text-sm text-text-secondary hover:underline">
+            <button onClick={resetForm} className={buttonClass('tertiary')}>
               Cancel
             </button>
           </div>
@@ -354,15 +318,17 @@ export function CustodyPanel({
       )}
 
       {history.length > 0 && (
-        <div className="mt-5">
-          <h3 className="mb-2 text-sm font-medium text-text-secondary">Assignment history</h3>
+        <div className="mt-5 border-t border-divider pt-4">
+          <h3 className="mb-2 text-body-xs font-medium uppercase tracking-wide text-text-tertiary">
+            Assignment history
+          </h3>
           <table className="w-full text-sm">
             <tbody>
               {history.map((a) => (
                 <tr key={a.id} className="border-b border-divider last:border-0">
-                  <td className="py-1 pr-3 text-text-primary">{a.employees?.name}</td>
-                  <td className="py-1 pr-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>
-                  <td className="py-1 text-text-secondary">
+                  <td className="py-1.5 pr-3 text-text-primary">{a.employees?.name}</td>
+                  <td className="py-1.5 pr-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>
+                  <td className="py-1.5 text-text-secondary">
                     {a.returned_at ? `Returned ${new Date(a.returned_at).toLocaleDateString()}` : 'Open'}
                   </td>
                 </tr>
@@ -371,6 +337,6 @@ export function CustodyPanel({
           </table>
         </div>
       )}
-    </div>
+    </Card>
   )
 }

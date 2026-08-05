@@ -5,6 +5,11 @@ import { supabase } from '@/lib/supabase'
 import type { EmploymentStatus } from '@/types/employee'
 import { EMPLOYMENT_STATUSES } from '@/types/employee'
 import type { Location } from '@/types/asset'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface FormState {
   employee_code: string
@@ -27,9 +32,6 @@ const EMPTY_FORM: FormState = {
   employment_status: 'active',
   location_id: '',
 }
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
 
 export function EmployeeForm() {
   const { id } = useParams()
@@ -128,109 +130,80 @@ export function EmployeeForm() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">{isEditing ? 'Edit employee' : 'Add employee'}</h1>
+      <h1 className="text-h3 mb-6">{isEditing ? 'Edit employee' : 'Add employee'}</h1>
 
-      <form onSubmit={handleSubmit} className="card-in max-w-lg space-y-4">
+      <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Employee code *</label>
-            <input
-              value={form.employee_code}
-              onChange={(e) => update('employee_code', e.target.value)}
-              required
-              className={FIELD_CLASS}
-            />
+            <Label>Employee code *</Label>
+            <Input value={form.employee_code} onChange={(e) => update('employee_code', e.target.value)} required />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Name *</label>
-            <input value={form.name} onChange={(e) => update('name', e.target.value)} required className={FIELD_CLASS} />
+            <Label>Name *</Label>
+            <Input value={form.name} onChange={(e) => update('name', e.target.value)} required />
           </div>
         </div>
 
         <div>
-          <label className={LABEL_CLASS}>Work email *</label>
-          <input
-            type="email"
-            value={form.work_email}
-            onChange={(e) => update('work_email', e.target.value)}
-            required
-            className={FIELD_CLASS}
-          />
+          <Label>Work email *</Label>
+          <Input type="email" value={form.work_email} onChange={(e) => update('work_email', e.target.value)} required />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Department</label>
-            <input value={form.department} onChange={(e) => update('department', e.target.value)} className={FIELD_CLASS} />
+            <Label>Department</Label>
+            <Input value={form.department} onChange={(e) => update('department', e.target.value)} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Designation</label>
-            <input
-              value={form.designation}
-              onChange={(e) => update('designation', e.target.value)}
-              className={FIELD_CLASS}
-            />
+            <Label>Designation</Label>
+            <Input value={form.designation} onChange={(e) => update('designation', e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Join date</label>
-            <input
-              type="date"
-              value={form.join_date}
-              onChange={(e) => update('join_date', e.target.value)}
-              className={FIELD_CLASS}
-            />
+            <Label>Join date</Label>
+            <Input type="date" value={form.join_date} onChange={(e) => update('join_date', e.target.value)} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Location</label>
-            <select value={form.location_id} onChange={(e) => update('location_id', e.target.value)} className={FIELD_CLASS}>
+            <Label>Location</Label>
+            <Select value={form.location_id} onChange={(e) => update('location_id', e.target.value)}>
               <option value="">None</option>
               {locations.map((loc) => (
                 <option key={loc.id} value={loc.id}>
                   {loc.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         <div>
-          <label className={LABEL_CLASS}>Employment status</label>
-          <select
+          <Label>Employment status</Label>
+          <Select
             value={form.employment_status}
             onChange={(e) => update('employment_status', e.target.value as EmploymentStatus)}
-            className={FIELD_CLASS}
           >
             {EMPLOYMENT_STATUSES.map((s) => (
               <option key={s} value={s}>
                 {s}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         {error && <p className="text-sm text-error-text">{error}</p>}
         {offboardingNote && <p className="text-sm text-warning-text">{offboardingNote}</p>}
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-          >
+          <button type="submit" disabled={isSaving} className={buttonClass('primary')}>
             {isSaving ? 'Saving...' : isEditing ? 'Save changes' : 'Create employee'}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-          >
+          <button type="button" onClick={() => navigate(-1)} className={buttonClass('tertiary')}>
             Cancel
           </button>
         </div>
-      </form>
+      </Card>
     </div>
   )
 }

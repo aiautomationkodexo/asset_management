@@ -1,29 +1,29 @@
 import { Link } from 'react-router-dom'
+import { ShieldAlert } from 'lucide-react'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { Card } from '@/components/ui/Card'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 export function Unauthorized() {
   const { logout } = useSimpleAuth()
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="card-in w-full max-w-sm rounded-radius-lg border border-error-border bg-bg-elevated p-8 text-center shadow-md">
-        <h1 className="mb-2 text-2xl text-error-text">Access Not Granted</h1>
+    <div className="flex min-h-screen flex-col items-center justify-center bg-bg-alt p-4">
+      <Card className="card-in w-full max-w-sm p-8 text-center">
+        <div className="mx-auto mb-4 flex h-11 w-11 items-center justify-center rounded-radius-md bg-error-bg text-error-text">
+          <ShieldAlert className="h-5 w-5" strokeWidth={1.75} />
+        </div>
+        <h1 className="text-h5 mb-2">Access not granted</h1>
         <p className="mb-6 text-sm text-text-secondary">
           Your account doesn't have permission to perform this action.
         </p>
-        <Link
-          to="/assets"
-          className="mb-3 flex w-full items-center justify-center gap-2 rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-        >
+        <Link to="/assets" className={buttonClass('primary', 'mb-3 w-full')}>
           Back to assets
         </Link>
-        <button
-          onClick={logout}
-          className="flex w-full items-center justify-center gap-2 rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-        >
+        <button onClick={logout} className={buttonClass('tertiary', 'w-full')}>
           Sign out
         </button>
-      </div>
+      </Card>
     </div>
   )
 }

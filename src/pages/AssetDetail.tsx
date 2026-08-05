@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import QRCode from 'qrcode'
+import { Pencil, Trash2, Download, Printer } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AssetWithRelations } from '@/types/asset'
-import { ASSET_STATUS_LABELS, ASSET_STATUS_STYLE } from '@/lib/assetStatusStyle'
+import { ASSET_STATUS_LABELS, ASSET_STATUS_TONE } from '@/lib/assetStatusStyle'
 import { generateLabelsPdf } from '@/lib/labelPdf'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { CustodyPanel } from '@/components/CustodyPanel'
 import { DisposalPanel } from '@/components/DisposalPanel'
 import { MaintenancePanel } from '@/components/MaintenancePanel'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 export function AssetDetail() {
   const { isAdmin } = useSimpleAuth()
@@ -113,96 +117,91 @@ export function AssetDetail() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-start justify-between">
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
         <div>
-          <h1 className="text-3xl">
-            <code>{asset.asset_tag}</code>
-          </h1>
+          <div className="mb-1 flex items-center gap-3">
+            <h1 className="text-h3">
+              <code>{asset.asset_tag}</code>
+            </h1>
+            <Badge tone={ASSET_STATUS_TONE[asset.status]}>{ASSET_STATUS_LABELS[asset.status]}</Badge>
+          </div>
           <Link to={`/a/${asset.public_slug}`} className="text-sm text-brand-red hover:underline">
             Public scan link ↗
           </Link>
         </div>
         {isAdmin && (
           <div className="flex gap-3">
-            <Link
-              to={`/assets/${asset.id}/edit`}
-              className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-            >
+            <Link to={`/assets/${asset.id}/edit`} className={buttonClass('tertiary')}>
+              <Pencil className="h-4 w-4" strokeWidth={1.75} />
               Edit
             </Link>
-            <button
-              onClick={handleDelete}
-              className="rounded-radius-md bg-brand-red-deep px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red"
-            >
+            <button onClick={handleDelete} className={buttonClass('danger')}>
+              <Trash2 className="h-4 w-4" strokeWidth={1.75} />
               Delete
             </button>
           </div>
         )}
       </div>
 
-      <div className="card-in mb-6 flex max-w-lg flex-col items-center gap-3 rounded-radius-lg border border-border bg-bg-elevated p-6 shadow-sm">
-        <div className="rounded-radius-md bg-white p-3">
-          {qrDataUrl ? (
-            <img src={qrDataUrl} alt={`QR code for ${asset.asset_tag}`} className="h-40 w-40" />
-          ) : (
-            <div className="h-40 w-40 animate-pulse bg-bg-alt" />
-          )}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
+        <div className="space-y-6 lg:order-1">
+          <CustodyPanel assetId={asset.id} assetStatus={asset.status} isAdmin={isAdmin} onChanged={load} />
+
+          <MaintenancePanel
+            assetId={asset.id}
+            purchaseCostBase={asset.purchase_cost_base}
+            isAdmin={isAdmin}
+            onChanged={load}
+          />
+
+          {isAdmin && <DisposalPanel asset={asset} onChanged={load} />}
+
+          <Card>
+            <dl className="divide-y divide-divider">
+              {fields.map(([label, value]) => (
+                <div key={label} className="flex justify-between px-4 py-3 text-sm">
+                  <dt className="text-text-secondary">{label}</dt>
+                  <dd className="font-medium capitalize text-text-primary">{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </Card>
         </div>
-        <div className="text-center text-sm">
-          <p className="text-text-secondary">
-            Asset tag: <span className="font-medium text-text-primary">{asset.asset_tag}</span>
-          </p>
-          <p className="text-text-secondary">
-            Public slug: <span className="font-medium text-text-primary">{asset.public_slug}</span>
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <button
-            onClick={handleDownloadQr}
-            disabled={!qrDataUrl}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border disabled:opacity-50"
-          >
-            Download QR Code
-          </button>
-          <button
-            onClick={handlePrintLabel}
-            disabled={isPrintingLabel}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border disabled:opacity-50"
-          >
-            {isPrintingLabel ? 'Generating...' : 'Print label'}
-          </button>
+
+        <div className="lg:order-2">
+          <Card className="card-in flex flex-col items-center gap-3 p-6">
+            <div className="rounded-radius-md bg-white p-3">
+              {qrDataUrl ? (
+                <img src={qrDataUrl} alt={`QR code for ${asset.asset_tag}`} className="h-36 w-36" />
+              ) : (
+                <div className="h-36 w-36 animate-pulse bg-bg-alt" />
+              )}
+            </div>
+            <div className="text-center text-sm">
+              <p className="text-text-secondary">
+                Asset tag: <span className="font-medium text-text-primary">{asset.asset_tag}</span>
+              </p>
+              <p className="text-text-secondary">
+                Public slug: <span className="font-medium text-text-primary">{asset.public_slug}</span>
+              </p>
+            </div>
+            <div className="flex w-full flex-col gap-2">
+              <button
+                onClick={handleDownloadQr}
+                disabled={!qrDataUrl}
+                className={buttonClass('tertiary', 'w-full')}
+              >
+                <Download className="h-4 w-4" strokeWidth={1.75} />
+                Download QR Code
+              </button>
+              <button onClick={handlePrintLabel} disabled={isPrintingLabel} className={buttonClass('tertiary', 'w-full')}>
+                <Printer className="h-4 w-4" strokeWidth={1.75} />
+                {isPrintingLabel ? 'Generating...' : 'Print label'}
+              </button>
+            </div>
+          </Card>
         </div>
       </div>
-
-      <CustodyPanel assetId={asset.id} assetStatus={asset.status} isAdmin={isAdmin} onChanged={load} />
-
-      <MaintenancePanel
-        assetId={asset.id}
-        purchaseCostBase={asset.purchase_cost_base}
-        isAdmin={isAdmin}
-        onChanged={load}
-      />
-
-      {isAdmin && <DisposalPanel asset={asset} onChanged={load} />}
-
-      <dl className="card-in max-w-lg divide-y divide-divider rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
-        <div className="flex items-center justify-between px-4 py-3 text-sm">
-          <dt className="text-text-secondary">Status</dt>
-          <dd>
-            <span
-              className={`rounded-radius-pill border px-2 py-0.5 text-xs font-medium ${ASSET_STATUS_STYLE[asset.status]}`}
-            >
-              {ASSET_STATUS_LABELS[asset.status]}
-            </span>
-          </dd>
-        </div>
-        {fields.map(([label, value]) => (
-          <div key={label} className="flex justify-between px-4 py-3 text-sm">
-            <dt className="text-text-secondary">{label}</dt>
-            <dd className="font-medium capitalize text-text-primary">{value}</dd>
-          </div>
-        ))}
-      </dl>
     </div>
   )
 }

@@ -3,6 +3,10 @@ import type { FormEvent } from 'react'
 import { Navigate } from 'react-router-dom'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { getUserStatus, setInitialPassword } from '@/lib/simpleAuth'
+import { Card } from '@/components/ui/Card'
+import { Button } from '@/components/ui/Button'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
 
 export function SimpleLogin() {
   const { isAuthenticated, login } = useSimpleAuth()
@@ -58,62 +62,61 @@ export function SimpleLogin() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center p-4">
-      <div className="w-full max-w-sm rounded-radius-lg border border-border bg-bg-elevated p-8 shadow-md">
-        <h1 className="mb-6 text-center text-2xl">Sign in</h1>
+    <div className="relative flex min-h-screen flex-col items-center justify-center overflow-hidden bg-bg p-4">
+      <div
+        className="pointer-events-none absolute left-1/2 top-0 h-[480px] w-[720px] -translate-x-1/2 -translate-y-1/3 rounded-radius-xl opacity-30 blur-3xl"
+        style={{ backgroundImage: 'var(--brand-gradient-a)' }}
+        aria-hidden
+      />
+
+      <div className="relative z-10 mb-8 flex items-center gap-2">
+        <span className="h-2.5 w-2.5 rounded-radius-pill bg-brand-red" />
+        <span className="font-heading text-lg font-semibold text-text-strong">Kodexo Labs</span>
+      </div>
+
+      <Card className="relative z-10 w-full max-w-sm p-8">
+        <h1 className="text-h4 mb-1">Sign in</h1>
+        <p className="mb-6 text-sm text-text-secondary">Asset management console</p>
+
         {needsPassword && (
-          <p className="mb-4 text-sm text-text-secondary">
+          <p className="mb-4 rounded-radius-md border border-info-border bg-info-bg px-3 py-2 text-sm text-info-text">
             No password set yet for this account. Choose one to finish setting up.
           </p>
         )}
-        <form onSubmit={handleSubmit} className="space-y-3">
+
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="mb-1 block text-sm font-medium text-text-primary">Email</label>
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              autoComplete="email"
-              className="w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-            />
+            <Label>Email</Label>
+            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
           </div>
           <div>
-            <label className="mb-1 block text-sm font-medium text-text-primary">
-              {needsPassword ? 'New password' : 'Password'}
-            </label>
-            <input
+            <Label>{needsPassword ? 'New password' : 'Password'}</Label>
+            <Input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
               autoComplete={needsPassword ? 'new-password' : 'current-password'}
-              className="w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
             />
           </div>
           {needsPassword && (
             <div>
-              <label className="mb-1 block text-sm font-medium text-text-primary">Confirm password</label>
-              <input
+              <Label>Confirm password</Label>
+              <Input
                 type="password"
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 autoComplete="new-password"
-                className="w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
               />
             </div>
           )}
           {error && <p className="text-sm text-error-text">{error}</p>}
-          <button
-            type="submit"
-            disabled={isSubmitting}
-            className="flex w-full items-center justify-center gap-2 rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-          >
+          <Button type="submit" disabled={isSubmitting} className="w-full">
             {isSubmitting ? 'Working...' : needsPassword ? 'Set password & sign in' : 'Sign in'}
-          </button>
+          </Button>
         </form>
-      </div>
+      </Card>
     </div>
   )
 }

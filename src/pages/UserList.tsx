@@ -2,6 +2,15 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/lib/simpleAuth'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { buttonClass } from '@/components/ui/buttonStyles'
+import { ShieldCheck } from 'lucide-react'
 
 interface UserRow {
   id: number
@@ -9,8 +18,6 @@ interface UserRow {
   role: UserRole
   password: string | null
 }
-
-const FIELD_CLASS = 'rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
 
 export function UserList() {
   const [users, setUsers] = useState<UserRow[]>([])
@@ -51,38 +58,28 @@ export function UserList() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">Users</h1>
+      <PageHeader kicker="Admin" title="Settings" subtitle="Users" />
 
-      <form onSubmit={handleAdd} className="card-in mb-6 flex max-w-lg items-end gap-3 rounded-radius-lg border border-border bg-bg-elevated p-4 shadow-sm">
-        <div className="flex-1">
-          <label className="mb-1 block text-sm font-medium text-text-primary">Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className={`w-full ${FIELD_CLASS}`}
-          />
+      <Card as="form" onSubmit={handleAdd} className="card-in mb-6 flex max-w-lg flex-wrap items-end gap-3 p-4">
+        <div className="min-w-[200px] flex-1">
+          <Label>Email</Label>
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         </div>
         <div>
-          <label className="mb-1 block text-sm font-medium text-text-primary">Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value as UserRole)} className={FIELD_CLASS}>
+          <Label>Role</Label>
+          <Select value={role} onChange={(e) => setRole(e.target.value as UserRole)}>
             <option value="user">user</option>
             <option value="admin">admin</option>
-          </select>
+          </Select>
         </div>
-        <button
-          type="submit"
-          disabled={isSaving}
-          className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-        >
+        <button type="submit" disabled={isSaving} className={buttonClass('primary')}>
           {isSaving ? 'Adding...' : 'Add user'}
         </button>
-      </form>
+      </Card>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
-      <div className="max-w-lg overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="max-w-lg overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -98,24 +95,26 @@ export function UserList() {
                   Loading...
                 </td>
               </tr>
+            ) : users.length === 0 ? (
+              <tr>
+                <td colSpan={3}>
+                  <EmptyState icon={ShieldCheck} title="No users yet" description="Add the first user above." />
+                </td>
+              </tr>
             ) : (
               users.map((u) => (
-                <tr key={u.id} className="border-b border-divider last:border-0">
+                <tr key={u.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3 text-text-primary">{u.email}</td>
                   <td className="px-4 py-3 text-text-primary">{u.role}</td>
                   <td className="px-4 py-3">
-                    {u.password ? (
-                      <span className="text-success-text">Active</span>
-                    ) : (
-                      <span className="text-warning-text">Pending setup</span>
-                    )}
+                    <Badge tone={u.password ? 'success' : 'warning'}>{u.password ? 'Active' : 'Pending setup'}</Badge>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

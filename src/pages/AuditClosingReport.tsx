@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AuditSession } from '@/types/audit'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface AssetRow {
   id: string
@@ -84,20 +88,21 @@ export function AuditClosingReport() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl">Closing report</h1>
-        <div className="flex gap-3">
-          <Link to={`/audit/${id}`} className="text-sm text-brand-red hover:underline">
-            Back to session
-          </Link>
-          <button
-            onClick={exportCsv}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-          >
-            Export CSV
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        kicker="Audit"
+        title="Closing report"
+        actions={
+          <>
+            <Link to={`/audit/${id}`} className="text-sm font-medium text-brand-red hover:underline">
+              Back to session
+            </Link>
+            <button onClick={exportCsv} className={buttonClass('tertiary')}>
+              <Download className="h-4 w-4" strokeWidth={1.75} />
+              Export CSV
+            </button>
+          </>
+        }
+      />
 
       {message && <p className="mb-4 text-sm text-success-text">{message}</p>}
 
@@ -111,7 +116,7 @@ export function AuditClosingReport() {
             tone="warning"
           />
           {wrongPlace.length > 0 && (
-            <button onClick={fixWrongPlace} className="mt-2 text-sm text-brand-red hover:underline">
+            <button onClick={fixWrongPlace} className="mt-2 text-sm font-medium text-brand-red hover:underline">
               Move all to session location
             </button>
           )}
@@ -129,7 +134,7 @@ export function AuditClosingReport() {
 function ReportSection({ title, items, tone }: { title: string; items: string[]; tone: 'success' | 'error' | 'warning' }) {
   const toneClass = { success: 'text-success-text', error: 'text-error-text', warning: 'text-warning-text' }[tone]
   return (
-    <div className="rounded-radius-lg border border-border bg-bg-elevated p-4 shadow-sm">
+    <Card className="p-4">
       <h3 className={`mb-2 text-sm font-medium ${toneClass}`}>{title}</h3>
       {items.length === 0 ? (
         <p className="text-sm text-text-secondary">None.</p>
@@ -142,6 +147,6 @@ function ReportSection({ title, items, tone }: { title: string; items: string[];
           ))}
         </ul>
       )}
-    </div>
+    </Card>
   )
 }

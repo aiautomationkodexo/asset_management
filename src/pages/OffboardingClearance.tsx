@@ -1,9 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { jsPDF } from 'jspdf'
+import { Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { ClearanceItemStatus, OffboardingClearanceItemWithAsset } from '@/types/custody'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Select } from '@/components/ui/Select'
+import { Input } from '@/components/ui/Input'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface ClearanceInfo {
   id: string
@@ -105,16 +112,17 @@ export function OffboardingClearance() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-2 text-3xl">Offboarding clearance</h1>
-      <p className="mb-6 text-sm text-text-secondary">
-        {employeeName} —{' '}
-        <span className={clearance.status === 'complete' ? 'text-success-text' : 'text-warning-text'}>
-          {clearance.status}
-        </span>
-        {clearance.status !== 'complete' && ` (${pendingCount} item${pendingCount === 1 ? '' : 's'} pending)`}
-      </p>
+      <PageHeader kicker="Offboarding" title="Offboarding clearance" subtitle={employeeName} />
+      <div className="mb-6 flex items-center gap-2">
+        <Badge tone={clearance.status === 'complete' ? 'success' : 'warning'}>{clearance.status}</Badge>
+        {clearance.status !== 'complete' && (
+          <span className="text-sm text-text-secondary">
+            {pendingCount} item{pendingCount === 1 ? '' : 's'} pending
+          </span>
+        )}
+      </div>
 
-      <div className="mb-6 max-w-2xl overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="mb-6 max-w-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -129,12 +137,10 @@ export function OffboardingClearance() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <button
-        onClick={exportPdf}
-        className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-      >
+      <button onClick={exportPdf} className={buttonClass('tertiary')}>
+        <Download className="h-4 w-4" strokeWidth={1.75} />
         Export PDF
       </button>
     </div>
@@ -159,7 +165,7 @@ function ClearanceItemRow({
         <code>{item.assignments?.assets?.asset_tag ?? '—'}</code>
       </td>
       <td className="px-4 py-3">
-        <select
+        <Select
           value={status}
           disabled={!isAdmin}
           onChange={(e) => {
@@ -167,20 +173,20 @@ function ClearanceItemRow({
             setStatus(next)
             onSave(item.id, next, notes)
           }}
-          className="rounded-radius-md border border-border bg-bg px-2 py-1 text-sm text-text-primary disabled:opacity-60"
+          className="w-auto py-1 disabled:opacity-60"
         >
           <option value="pending">Pending</option>
           <option value="returned">Returned</option>
           <option value="lost">Lost</option>
-        </select>
+        </Select>
       </td>
       <td className="px-4 py-3">
-        <input
+        <Input
           value={notes}
           disabled={!isAdmin}
           onChange={(e) => setNotes(e.target.value)}
           onBlur={() => onSave(item.id, status, notes)}
-          className="w-full rounded-radius-md border border-border bg-bg px-2 py-1 text-sm text-text-primary disabled:opacity-60"
+          className="py-1 disabled:opacity-60"
         />
       </td>
     </tr>

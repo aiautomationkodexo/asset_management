@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { Pencil, PackageCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { EmployeeWithLocation } from '@/types/employee'
 import type { Assignment } from '@/types/custody'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface AssignmentRow extends Assignment {
   assets: { asset_tag: string } | null
@@ -59,16 +63,14 @@ export function EmployeeDetail() {
     <div className="p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-3xl">{employee.name}</h1>
+          <h1 className="text-h3">{employee.name}</h1>
           <p className="text-sm text-text-secondary">
             <code>{employee.employee_code}</code> · {employee.work_email}
           </p>
         </div>
         {isAdmin && (
-          <Link
-            to={`/employees/${employee.id}/edit`}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-          >
+          <Link to={`/employees/${employee.id}/edit`} className={buttonClass('tertiary')}>
+            <Pencil className="h-4 w-4" strokeWidth={1.75} />
             Edit
           </Link>
         )}
@@ -102,8 +104,8 @@ export function EmployeeDetail() {
         ))}
       </dl>
 
-      <h2 className="mb-3 text-xl">Currently holding ({openAssignments.length})</h2>
-      <div className="mb-6 overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <h2 className="text-h6 mb-3">Currently holding ({openAssignments.length})</h2>
+      <Card className="mb-6 overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -116,30 +118,30 @@ export function EmployeeDetail() {
           <tbody>
             {openAssignments.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-4 text-center text-text-secondary">
-                  Nothing currently assigned.
+                <td colSpan={4}>
+                  <EmptyState icon={PackageCheck} title="Nothing currently assigned" />
                 </td>
               </tr>
             ) : (
               openAssignments.map((a) => (
-                <tr key={a.id} className="border-b border-divider last:border-0">
+                <tr key={a.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
-                    <Link to={`/assets/${a.asset_id}`} className="text-brand-red hover:underline">
+                    <Link to={`/assets/${a.asset_id}`} className="font-medium text-brand-red hover:underline">
                       <code>{a.assets?.asset_tag}</code>
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>
                   <td className="px-4 py-3 capitalize text-text-primary">{a.condition_out}</td>
-                  <td className="px-4 py-3">{a.signature_data_url ? 'Yes' : 'No'}</td>
+                  <td className="px-4 py-3 text-text-primary">{a.signature_data_url ? 'Yes' : 'No'}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
 
-      <h2 className="mb-3 text-xl">Full assignment history</h2>
-      <div className="overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <h2 className="text-h6 mb-3">Full assignment history</h2>
+      <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -158,9 +160,9 @@ export function EmployeeDetail() {
               </tr>
             ) : (
               assignments.map((a) => (
-                <tr key={a.id} className="border-b border-divider last:border-0">
+                <tr key={a.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
-                    <Link to={`/assets/${a.asset_id}`} className="text-brand-red hover:underline">
+                    <Link to={`/assets/${a.asset_id}`} className="font-medium text-brand-red hover:underline">
                       <code>{a.assets?.asset_tag}</code>
                     </Link>
                   </td>
@@ -168,13 +170,13 @@ export function EmployeeDetail() {
                   <td className="px-4 py-3 text-text-secondary">
                     {a.returned_at ? new Date(a.returned_at).toLocaleDateString() : '—'}
                   </td>
-                  <td className="px-4 py-3">{a.returned_at ? 'Returned' : 'Open'}</td>
+                  <td className="px-4 py-3 text-text-primary">{a.returned_at ? 'Returned' : 'Open'}</td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

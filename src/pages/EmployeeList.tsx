@@ -1,14 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { Search, Plus, Upload, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { EmployeeWithLocation } from '@/types/employee'
 import { EMPLOYMENT_STATUSES } from '@/types/employee'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
+import { PageHeader } from '@/components/ui/PageHeader'
+import { Card } from '@/components/ui/Card'
+import { Badge } from '@/components/ui/Badge'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Skeleton } from '@/components/ui/Skeleton'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
-const STATUS_STYLE: Record<string, string> = {
-  active: 'border-success-border bg-success-bg text-success-text',
-  notice: 'border-warning-border bg-warning-bg text-warning-text',
-  exited: 'border-border bg-n-100 text-text-tertiary',
+const STATUS_TONE: Record<string, 'success' | 'warning' | 'neutral'> = {
+  active: 'success',
+  notice: 'warning',
+  exited: 'neutral',
 }
 
 export function EmployeeList() {
@@ -41,50 +50,48 @@ export function EmployeeList() {
 
   return (
     <div className="p-8">
-      <div className="mb-6 flex items-center justify-between">
-        <h1 className="text-3xl">Employees</h1>
-        {isAdmin && (
-          <div className="flex items-center gap-3">
-            <Link
-              to="/employees/import"
-              className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-            >
-              CSV import
-            </Link>
-            <Link
-              to="/employees/new"
-              className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep"
-            >
-              Add employee
-            </Link>
-          </div>
-        )}
-      </div>
+      <PageHeader
+        kicker="People"
+        title="Employees"
+        actions={
+          isAdmin && (
+            <>
+              <Link to="/employees/import" className={buttonClass('tertiary')}>
+                <Upload className="h-4 w-4" strokeWidth={1.75} />
+                CSV import
+              </Link>
+              <Link to="/employees/new" className={buttonClass('primary')}>
+                <Plus className="h-4 w-4" strokeWidth={1.75} />
+                Add employee
+              </Link>
+            </>
+          )
+        }
+      />
 
       <div className="mb-4 flex flex-wrap gap-3">
-        <input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="Search code, name, email..."
-          className="w-64 rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-        />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary"
-        >
+        <div className="relative w-64">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-text-tertiary" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search code, name, email..."
+            className="pl-9"
+          />
+        </div>
+        <Select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} className="w-auto">
           <option value="">All statuses</option>
           {EMPLOYMENT_STATUSES.map((s) => (
             <option key={s} value={s}>
               {s}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
-      <div className="overflow-hidden rounded-radius-lg border border-border bg-bg-elevated shadow-sm">
+      <Card className="overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
@@ -97,15 +104,41 @@ export function EmployeeList() {
           </thead>
           <tbody>
             {isLoading ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-text-secondary">
-                  Loading...
-                </td>
-              </tr>
+              Array.from({ length: 6 }).map((_, i) => (
+                <tr key={i} className="border-b border-divider last:border-0">
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-16" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-28" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-20" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-4 w-24" />
+                  </td>
+                  <td className="px-4 py-3">
+                    <Skeleton className="h-5 w-14 rounded-radius-pill" />
+                  </td>
+                </tr>
+              ))
             ) : employees.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-text-secondary">
-                  No employees found.
+                <td colSpan={5}>
+                  <EmptyState
+                    icon={Users}
+                    title="No employees found"
+                    description={search || statusFilter ? 'Try clearing a filter.' : 'Add the first employee.'}
+                    action={
+                      isAdmin && (
+                        <Link to="/employees/new" className={buttonClass('primary')}>
+                          <Plus className="h-4 w-4" strokeWidth={1.75} />
+                          Add employee
+                        </Link>
+                      )
+                    }
+                  />
                 </td>
               </tr>
             ) : (
@@ -120,18 +153,14 @@ export function EmployeeList() {
                   <td className="px-4 py-3 text-text-primary">{emp.department ?? '—'}</td>
                   <td className="px-4 py-3 text-text-primary">{emp.locations?.name ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span
-                      className={`rounded-radius-pill border px-2 py-0.5 text-xs font-medium ${STATUS_STYLE[emp.employment_status]}`}
-                    >
-                      {emp.employment_status}
-                    </span>
+                    <Badge tone={STATUS_TONE[emp.employment_status] ?? 'neutral'}>{emp.employment_status}</Badge>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
-      </div>
+      </Card>
     </div>
   )
 }

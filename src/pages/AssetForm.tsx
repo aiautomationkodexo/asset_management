@@ -4,6 +4,12 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import type { AssetCategory, AssetCondition, AssetStatus, Location } from '@/types/asset'
 import { ASSET_CONDITIONS, ASSET_STATUSES } from '@/types/asset'
+import { Card } from '@/components/ui/Card'
+import { Label } from '@/components/ui/Label'
+import { Input } from '@/components/ui/Input'
+import { Select } from '@/components/ui/Select'
+import { Textarea } from '@/components/ui/Textarea'
+import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface FormState {
   category_id: string
@@ -26,9 +32,6 @@ const EMPTY_FORM: FormState = {
   status: 'in_stock',
   notes: '',
 }
-
-const FIELD_CLASS = 'w-full rounded-radius-md border border-border bg-bg px-3 py-2 text-sm text-text-primary'
-const LABEL_CLASS = 'mb-1 block text-sm font-medium text-text-primary'
 
 export function AssetForm() {
   const { id } = useParams()
@@ -134,124 +137,90 @@ export function AssetForm() {
 
   return (
     <div className="p-8">
-      <h1 className="mb-6 text-3xl">{isEditing ? 'Edit asset' : 'Add asset'}</h1>
+      <h1 className="text-h3 mb-6">{isEditing ? 'Edit asset' : 'Add asset'}</h1>
 
-      <form onSubmit={handleSubmit} className="card-in max-w-lg space-y-4">
+      <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
         <div>
-          <label className={LABEL_CLASS}>Category *</label>
-          <select
-            value={form.category_id}
-            onChange={(e) => update('category_id', e.target.value)}
-            required
-            className={FIELD_CLASS}
-          >
+          <Label>Category *</Label>
+          <Select value={form.category_id} onChange={(e) => update('category_id', e.target.value)} required>
             <option value="">Select category</option>
             {categories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Make</label>
-            <input value={form.make} onChange={(e) => update('make', e.target.value)} className={FIELD_CLASS} />
+            <Label>Make</Label>
+            <Input value={form.make} onChange={(e) => update('make', e.target.value)} />
           </div>
           <div>
-            <label className={LABEL_CLASS}>Model</label>
-            <input value={form.model} onChange={(e) => update('model', e.target.value)} className={FIELD_CLASS} />
+            <Label>Model</Label>
+            <Input value={form.model} onChange={(e) => update('model', e.target.value)} />
           </div>
         </div>
 
         <div>
-          <label className={LABEL_CLASS}>Serial number</label>
-          <input
-            value={form.serial_no}
-            onChange={(e) => update('serial_no', e.target.value)}
-            className={FIELD_CLASS}
-          />
+          <Label>Serial number</Label>
+          <Input value={form.serial_no} onChange={(e) => update('serial_no', e.target.value)} />
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <label className={LABEL_CLASS}>Condition *</label>
-            <select
-              value={form.condition}
-              onChange={(e) => update('condition', e.target.value as AssetCondition)}
-              className={FIELD_CLASS}
-            >
+            <Label>Condition *</Label>
+            <Select value={form.condition} onChange={(e) => update('condition', e.target.value as AssetCondition)}>
               {ASSET_CONDITIONS.map((condition) => (
                 <option key={condition} value={condition}>
                   {condition}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
           <div>
-            <label className={LABEL_CLASS}>Location</label>
-            <select
-              value={form.location_id}
-              onChange={(e) => update('location_id', e.target.value)}
-              className={FIELD_CLASS}
-            >
+            <Label>Location</Label>
+            <Select value={form.location_id} onChange={(e) => update('location_id', e.target.value)}>
               <option value="">None</option>
               {locations.map((location) => (
                 <option key={location.id} value={location.id}>
                   {location.name}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         </div>
 
         {isEditing && (
           <div>
-            <label className={LABEL_CLASS}>Status</label>
-            <select
-              value={form.status}
-              onChange={(e) => update('status', e.target.value as AssetStatus)}
-              className={FIELD_CLASS}
-            >
+            <Label>Status</Label>
+            <Select value={form.status} onChange={(e) => update('status', e.target.value as AssetStatus)}>
               {ASSET_STATUSES.map((status) => (
                 <option key={status} value={status}>
                   {status}
                 </option>
               ))}
-            </select>
+            </Select>
           </div>
         )}
 
         <div>
-          <label className={LABEL_CLASS}>Notes</label>
-          <textarea
-            value={form.notes}
-            onChange={(e) => update('notes', e.target.value)}
-            rows={3}
-            className={FIELD_CLASS}
-          />
+          <Label>Notes</Label>
+          <Textarea value={form.notes} onChange={(e) => update('notes', e.target.value)} rows={3} />
         </div>
 
         {error && <p className="text-sm text-error-text">{error}</p>}
 
         <div className="flex gap-3 pt-2">
-          <button
-            type="submit"
-            disabled={isSaving}
-            className="rounded-radius-md bg-brand-red px-4 py-2 text-sm font-medium text-text-on-brand hover:bg-brand-red-deep disabled:opacity-50"
-          >
+          <button type="submit" disabled={isSaving} className={buttonClass('primary')}>
             {isSaving ? 'Saving...' : isEditing ? 'Save changes' : 'Create asset'}
           </button>
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="rounded-radius-md border border-border bg-bg-alt px-4 py-2 text-sm font-medium text-text-primary hover:bg-border"
-          >
+          <button type="button" onClick={() => navigate(-1)} className={buttonClass('tertiary')}>
             Cancel
           </button>
         </div>
-      </form>
+      </Card>
     </div>
   )
 }
