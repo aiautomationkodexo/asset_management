@@ -19,6 +19,7 @@ import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { cn } from '@/lib/utils'
 import { applyTheme, getStoredTheme } from '@/lib/theme'
 import type { Theme } from '@/lib/theme'
+import { Logo } from '@/components/ui/Logo'
 
 // Labels follow the FSD's naming (Register, Assign/Return, Settings) even
 // where the route path is unchanged. There is no standalone "Maintenance"
@@ -104,9 +105,8 @@ export function Layout() {
   return (
     <div className="flex min-h-screen bg-bg">
       <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-bg-elevated md:flex">
-        <div className="flex h-14 items-center gap-2 border-b border-border px-6">
-          <span className="h-2 w-2 rounded-radius-pill bg-brand-red" />
-          <span className="font-heading text-sm font-semibold text-text-strong">Kodexo Labs</span>
+        <div className="flex h-14 items-center border-b border-border px-6">
+          <Logo theme={theme} className="h-6 w-auto" />
         </div>
         <nav className="flex-1 space-y-1 overflow-y-auto p-3">
           <NavList items={allItems} groupId="desktop-nav" />
@@ -132,10 +132,7 @@ export function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-border bg-bg-elevated md:hidden">
           <div className="flex h-14 items-center justify-between px-4">
-            <div className="flex items-center gap-2">
-              <span className="h-2 w-2 rounded-radius-pill bg-brand-red" />
-              <span className="font-heading text-sm font-semibold text-text-strong">Kodexo Labs</span>
-            </div>
+            <Logo theme={theme} className="h-6 w-auto" />
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}

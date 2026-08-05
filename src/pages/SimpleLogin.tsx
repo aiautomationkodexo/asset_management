@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/Card'
 import { Button } from '@/components/ui/Button'
 import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
+import { Logo } from '@/components/ui/Logo'
 
 export function SimpleLogin() {
   const { isAuthenticated, login } = useSimpleAuth()
@@ -69,9 +70,8 @@ export function SimpleLogin() {
         aria-hidden
       />
 
-      <div className="relative z-10 mb-8 flex items-center gap-2">
-        <span className="h-2.5 w-2.5 rounded-radius-pill bg-brand-red" />
-        <span className="font-heading text-lg font-semibold text-text-strong">Kodexo Labs</span>
+      <div className="relative z-10 mb-8">
+        <Logo className="h-10 w-auto" />
       </div>
 
       <Card className="relative z-10 w-full max-w-sm p-8">

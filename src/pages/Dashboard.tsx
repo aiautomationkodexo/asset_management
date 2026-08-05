@@ -102,7 +102,7 @@ export function Dashboard() {
               <Boxes className="h-6 w-6" strokeWidth={1.75} />
               <span className="text-sm opacity-90">Total assets</span>
             </div>
-            <div className="font-body text-6xl font-bold leading-none tracking-tight sm:text-7xl">
+            <div className="font-display text-6xl leading-none tracking-tight sm:text-7xl">
               {total === null ? (
                 <Skeleton className="h-16 w-32 bg-white/20" />
               ) : (
