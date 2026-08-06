@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Search, Plus, Upload, Users } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import type { EmployeeWithLocation } from '@/types/employee'
+import type { Employee } from '@/types/employee'
 import { EMPLOYMENT_STATUSES } from '@/types/employee'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { PageHeader } from '@/components/ui/PageHeader'
@@ -22,7 +22,7 @@ const STATUS_TONE: Record<string, 'success' | 'warning' | 'neutral'> = {
 
 export function EmployeeList() {
   const { isAdmin } = useSimpleAuth()
-  const [employees, setEmployees] = useState<EmployeeWithLocation[]>([])
+  const [employees, setEmployees] = useState<Employee[]>([])
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('')
   const [isLoading, setIsLoading] = useState(true)
@@ -32,18 +32,18 @@ export function EmployeeList() {
     setIsLoading(true)
     let query = supabase
       .from('employees')
-      .select('*, locations(name)')
-      .order('name')
+      .select('*')
+      .order('full_name')
 
     if (statusFilter) query = query.eq('employment_status', statusFilter)
     if (search.trim()) {
       const term = search.trim()
-      query = query.or(`name.ilike.%${term}%,employee_code.ilike.%${term}%,work_email.ilike.%${term}%`)
+      query = query.or(`full_name.ilike.%${term}%,employee_code.ilike.%${term}%,work_email.ilike.%${term}%`)
     }
 
     query.then(({ data, error }) => {
       if (error) setError(error.message)
-      else setEmployees((data ?? []) as unknown as EmployeeWithLocation[])
+      else setEmployees((data ?? []) as Employee[])
       setIsLoading(false)
     })
   }, [search, statusFilter])
@@ -149,9 +149,9 @@ export function EmployeeList() {
                       <code>{emp.employee_code}</code>
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-text-primary">{emp.name}</td>
+                  <td className="px-4 py-3 text-text-primary">{emp.full_name}</td>
                   <td className="px-4 py-3 text-text-primary">{emp.department ?? '—'}</td>
-                  <td className="px-4 py-3 text-text-primary">{emp.locations?.name ?? '—'}</td>
+                  <td className="px-4 py-3 text-text-primary">{emp.location ?? '—'}</td>
                   <td className="px-4 py-3">
                     <Badge tone={STATUS_TONE[emp.employment_status] ?? 'neutral'}>{emp.employment_status}</Badge>
                   </td>

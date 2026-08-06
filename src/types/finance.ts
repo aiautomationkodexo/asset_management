@@ -1,36 +1,22 @@
 export interface Purchase {
   id: string
-  vendor: string
-  invoice_number: string | null
-  purchase_date: string
+  vendor_name: string
+  invoice_no: string | null
+  invoice_date: string
   currency: string
-  amount: number
+  amount_original: number
   fx_rate: number
+  amount_base: number
   warranty_until: string | null
-  invoice_file_data_url: string | null
+  attachment_url: string | null
   created_at: string
 }
 
-export type DepreciationMethod = 'book' | 'tax'
-
-export interface DepreciationSnapshot {
+export interface PurchaseAsset {
   id: string
+  purchase_id: string
   asset_id: string
-  period: string
-  method: DepreciationMethod
-  opening_value: number
-  charge: number
-  closing_value: number
-  created_at: string
-}
-
-export interface Disposal {
-  id: string
-  asset_id: string
-  disposal_date: string
-  method: string
-  proceeds: number
-  book_value_at_disposal: number
-  gain_loss: number
+  asset_tag: string
+  unit_cost: number
   created_at: string
 }

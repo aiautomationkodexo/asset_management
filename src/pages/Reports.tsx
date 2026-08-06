@@ -10,13 +10,13 @@ interface ValueByCategory {
   category: string
   value: number
 }
-interface ValueByDept {
-  department: string
-  value: number
-}
 interface InStockRow {
   asset_tag: string
   category: string
+}
+interface ValueByDept {
+  department: string
+  value: number
 }
 interface CustodyRow {
   department: string
@@ -32,29 +32,23 @@ interface RepairRow {
   asset_tag: string
   days_open: number
 }
-interface UnscannedRow {
-  asset_tag: string
-  last_scanned: string
-}
 
-const NOT_SCANNED_MONTHS = 3
 const IN_REPAIR_TOO_LONG_DAYS = 14
 
 export function Reports() {
   const [valueByCategory, setValueByCategory] = useState<ValueByCategory[]>([])
-  const [valueByDept, setValueByDept] = useState<ValueByDept[]>([])
   const [inStock, setInStock] = useState<InStockRow[]>([])
+  const [valueByDept, setValueByDept] = useState<ValueByDept[]>([])
   const [custody, setCustody] = useState<CustodyRow[]>([])
   const [warranty, setWarranty] = useState<WarrantyRow[]>([])
   const [repairTooLong, setRepairTooLong] = useState<RepairRow[]>([])
-  const [unscanned, setUnscanned] = useState<UnscannedRow[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     async function load() {
       const { data: assets } = await supabase
         .from('assets')
-        .select('id, asset_tag, status, purchase_cost_base, in_service_date, useful_life_months, asset_categories(name)')
+        .select('id, asset_tag, status, purchase_cost_base, asset_categories(name)')
         .is('deleted_at', null)
 
       const assetRows = (assets ?? []) as any[]
@@ -72,23 +66,25 @@ export function Reports() {
           .map((a) => ({ asset_tag: a.asset_tag, category: a.asset_categories?.name ?? '—' }))
       )
 
-      const { data: openAssignments } = await supabase
-        .from('assignments')
-        .select('asset_id, employees(name, department), assets(asset_tag, purchase_cost_base)')
-        .is('returned_at', null)
+      const [{ data: openAssignments }, { data: employeeRows }] = await Promise.all([
+        supabase.from('assignments').select('employee_code, employee_name, asset_tag').is('returned_at', null),
+        supabase.from('employees').select('employee_code, department'),
+      ])
 
+      const costByAssetTag = new Map(assetRows.map((a) => [a.asset_tag, a.purchase_cost_base ?? 0]))
+      const deptByCode = new Map((employeeRows ?? []).map((e) => [e.employee_code, e.department ?? 'Unassigned']))
       const assignRows = (openAssignments ?? []) as any[]
       const byDept = new Map<string, number>()
       for (const r of assignRows) {
-        const dept = r.employees?.department ?? 'Unassigned'
-        byDept.set(dept, (byDept.get(dept) ?? 0) + (r.assets?.purchase_cost_base ?? 0))
+        const dept = deptByCode.get(r.employee_code) ?? 'Unassigned'
+        byDept.set(dept, (byDept.get(dept) ?? 0) + (costByAssetTag.get(r.asset_tag) ?? 0))
       }
       setValueByDept(Array.from(byDept, ([department, value]) => ({ department, value })))
       setCustody(
         assignRows.map((r) => ({
-          department: r.employees?.department ?? 'Unassigned',
-          employee: r.employees?.name ?? '—',
-          asset_tag: r.assets?.asset_tag ?? '—',
+          department: deptByCode.get(r.employee_code) ?? 'Unassigned',
+          employee: r.employee_name ?? '—',
+          asset_tag: r.asset_tag ?? '—',
         }))
       )
 
@@ -96,16 +92,16 @@ export function Reports() {
       const in60 = new Date(today.getTime() + 60 * 24 * 60 * 60 * 1000)
       const { data: purchases } = await supabase
         .from('purchases')
-        .select('id, vendor, warranty_until')
+        .select('id, vendor_name, warranty_until')
         .not('warranty_until', 'is', null)
         .gte('warranty_until', today.toISOString().slice(0, 10))
         .lte('warranty_until', in60.toISOString().slice(0, 10))
 
       const warrantyRows: WarrantyRow[] = []
       for (const p of purchases ?? []) {
-        const { data: linkedAssets } = await supabase.from('assets').select('asset_tag').eq('purchase_id', p.id)
+        const { data: linkedAssets } = await supabase.from('purchase_assets').select('asset_tag').eq('purchase_id', p.id)
         for (const a of linkedAssets ?? []) {
-          warrantyRows.push({ asset_tag: a.asset_tag, vendor: p.vendor, warranty_until: p.warranty_until as string })
+          warrantyRows.push({ asset_tag: a.asset_tag, vendor: p.vendor_name, warranty_until: p.warranty_until as string })
         }
       }
       setWarranty(warrantyRows)
@@ -123,23 +119,6 @@ export function Reports() {
         }
       }
       setRepairTooLong(repairRows)
-
-      const { data: scans } = await supabase.from('audit_scans').select('asset_id, scanned_at').not('asset_id', 'is', null)
-      const lastScanByAsset = new Map<string, string>()
-      for (const s of scans ?? []) {
-        const existing = lastScanByAsset.get(s.asset_id as string)
-        if (!existing || s.scanned_at > existing) lastScanByAsset.set(s.asset_id as string, s.scanned_at)
-      }
-      const cutoff = new Date(today.getFullYear(), today.getMonth() - NOT_SCANNED_MONTHS, today.getDate())
-      setUnscanned(
-        assetRows
-          .filter((a) => a.status !== 'disposed')
-          .filter((a) => {
-            const last = lastScanByAsset.get(a.id)
-            return !last || new Date(last) < cutoff
-          })
-          .map((a) => ({ asset_tag: a.asset_tag, last_scanned: lastScanByAsset.get(a.id) ?? 'Never' }))
-      )
 
       setIsLoading(false)
     }
@@ -162,15 +141,6 @@ export function Reports() {
         filename="value-by-category.csv"
       />
       <ReportCard
-        title="What we own & its value — by department"
-        rows={valueByDept}
-        columns={[
-          ['department', 'Department'],
-          ['value', 'Value'],
-        ]}
-        filename="value-by-department.csv"
-      />
-      <ReportCard
         title="What's sitting unused (in-stock)"
         rows={inStock}
         columns={[
@@ -178,6 +148,15 @@ export function Reports() {
           ['category', 'Category'],
         ]}
         filename="in-stock.csv"
+      />
+      <ReportCard
+        title="What we own & its value — by department"
+        rows={valueByDept}
+        columns={[
+          ['department', 'Department'],
+          ['value', 'Value'],
+        ]}
+        filename="value-by-department.csv"
       />
       <ReportCard
         title="Who has what — custody by department"
@@ -207,15 +186,6 @@ export function Reports() {
           ['days_open', 'Days open'],
         ]}
         filename="in-repair-too-long.csv"
-      />
-      <ReportCard
-        title={`Not scanned in ${NOT_SCANNED_MONTHS}+ months`}
-        rows={unscanned}
-        columns={[
-          ['asset_tag', 'Asset'],
-          ['last_scanned', 'Last scanned'],
-        ]}
-        filename="not-scanned-recently.csv"
       />
     </div>
   )

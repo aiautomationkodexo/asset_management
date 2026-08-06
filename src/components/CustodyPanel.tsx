@@ -15,33 +15,31 @@ import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface EmployeeOption {
   id: string
-  name: string
+  full_name: string
   employee_code: string
-}
-
-interface AssignmentRow extends Assignment {
-  employees: { name: string } | null
 }
 
 export function CustodyPanel({
   assetId,
+  assetTag,
   assetStatus,
   isAdmin,
   onChanged,
 }: {
   assetId: string
+  assetTag: string
   assetStatus: AssetStatus
   isAdmin: boolean
   onChanged: () => void
 }) {
   const { email } = useSimpleAuth()
-  const [history, setHistory] = useState<AssignmentRow[]>([])
+  const [history, setHistory] = useState<Assignment[]>([])
   const [employees, setEmployees] = useState<EmployeeOption[]>([])
   const [mode, setMode] = useState<'none' | 'assign' | 'return' | 'transfer'>('none')
   const [error, setError] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
 
-  const [employeeId, setEmployeeId] = useState('')
+  const [employeeCode, setEmployeeCode] = useState('')
   const [condition, setCondition] = useState<AssetCondition>('good')
   const [signature, setSignature] = useState<string | null>(null)
   const [damageNotes, setDamageNotes] = useState('')
@@ -50,28 +48,28 @@ export function CustodyPanel({
   function load() {
     supabase
       .from('assignments')
-      .select('*, employees(name)')
+      .select('*')
       .eq('asset_id', assetId)
       .order('assigned_at', { ascending: false })
-      .then(({ data }) => setHistory((data ?? []) as unknown as AssignmentRow[]))
+      .then(({ data }) => setHistory((data ?? []) as Assignment[]))
   }
 
   useEffect(load, [assetId])
 
   useEffect(() => {
-    if (!isAdmin) return
     supabase
       .from('employees')
-      .select('id, name, employee_code')
-      .order('name')
+      .select('id, full_name, employee_code')
+      .order('full_name')
       .then(({ data }) => setEmployees((data ?? []) as EmployeeOption[]))
-  }, [isAdmin])
+  }, [])
 
   const openAssignment = history.find((a) => !a.returned_at)
+  const openAssignmentEmployeeId = employees.find((e) => e.employee_code === openAssignment?.employee_code)?.id
 
   function resetForm() {
     setMode('none')
-    setEmployeeId('')
+    setEmployeeCode('')
     setCondition('good')
     setSignature(null)
     setDamageNotes('')
@@ -80,15 +78,18 @@ export function CustodyPanel({
   }
 
   async function handleAssign() {
-    if (!employeeId) {
+    if (!employeeCode) {
       setError('Choose an employee.')
       return
     }
     setIsSaving(true)
     setError(null)
+    const employee = employees.find((e) => e.employee_code === employeeCode)
     const { error: insertError } = await supabase.from('assignments').insert({
       asset_id: assetId,
-      employee_id: employeeId,
+      asset_tag: assetTag,
+      employee_code: employeeCode,
+      employee_name: employee?.full_name ?? '',
       condition_out: condition,
       issued_by: email,
       signature_data_url: signature,
@@ -142,7 +143,7 @@ export function CustodyPanel({
   }
 
   async function handleTransfer() {
-    if (!employeeId) {
+    if (!employeeCode) {
       setError('Choose an employee.')
       return
     }
@@ -150,7 +151,7 @@ export function CustodyPanel({
     setError(null)
     const { error: rpcError } = await supabase.rpc('transfer_asset', {
       p_asset_id: assetId,
-      p_new_employee_id: employeeId,
+      p_new_employee_code: employeeCode,
       p_condition: condition,
       p_admin: email,
       p_signature: signature,
@@ -172,8 +173,8 @@ export function CustodyPanel({
       {openAssignment ? (
         <p className="mb-3 text-sm text-text-secondary">
           Currently held by{' '}
-          <Link to={`/employees/${openAssignment.employee_id}`} className="font-medium text-brand-red hover:underline">
-            {openAssignment.employees?.name}
+          <Link to={`/employees/${openAssignmentEmployeeId ?? ''}`} className="font-medium text-brand-red hover:underline">
+            {openAssignment.employee_name}
           </Link>{' '}
           since {new Date(openAssignment.assigned_at).toLocaleDateString()}.
         </p>
@@ -208,11 +209,11 @@ export function CustodyPanel({
         <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
             <Label>Employee</Label>
-            <Select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+            <Select value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value)}>
               <option value="">Select employee</option>
               {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name} ({emp.employee_code})
+                <option key={emp.employee_code} value={emp.employee_code}>
+                  {emp.full_name} ({emp.employee_code})
                 </option>
               ))}
             </Select>
@@ -282,11 +283,11 @@ export function CustodyPanel({
         <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
             <Label>New employee</Label>
-            <Select value={employeeId} onChange={(e) => setEmployeeId(e.target.value)}>
+            <Select value={employeeCode} onChange={(e) => setEmployeeCode(e.target.value)}>
               <option value="">Select employee</option>
               {employees.map((emp) => (
-                <option key={emp.id} value={emp.id}>
-                  {emp.name} ({emp.employee_code})
+                <option key={emp.employee_code} value={emp.employee_code}>
+                  {emp.full_name} ({emp.employee_code})
                 </option>
               ))}
             </Select>
@@ -326,7 +327,7 @@ export function CustodyPanel({
             <tbody>
               {history.map((a) => (
                 <tr key={a.id} className="border-b border-divider last:border-0">
-                  <td className="py-1.5 pr-3 text-text-primary">{a.employees?.name}</td>
+                  <td className="py-1.5 pr-3 text-text-primary">{a.employee_name}</td>
                   <td className="py-1.5 pr-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>
                   <td className="py-1.5 text-text-secondary">
                     {a.returned_at ? `Returned ${new Date(a.returned_at).toLocaleDateString()}` : 'Open'}

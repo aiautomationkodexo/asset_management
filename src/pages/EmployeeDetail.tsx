@@ -2,22 +2,18 @@ import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Pencil, PackageCheck } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import type { EmployeeWithLocation } from '@/types/employee'
+import type { Employee } from '@/types/employee'
 import type { Assignment } from '@/types/custody'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
 
-interface AssignmentRow extends Assignment {
-  assets: { asset_tag: string } | null
-}
-
 export function EmployeeDetail() {
   const { isAdmin } = useSimpleAuth()
   const { id } = useParams()
-  const [employee, setEmployee] = useState<EmployeeWithLocation | null>(null)
-  const [assignments, setAssignments] = useState<AssignmentRow[]>([])
+  const [employee, setEmployee] = useState<Employee | null>(null)
+  const [assignments, setAssignments] = useState<Assignment[]>([])
   const [clearanceId, setClearanceId] = useState<string | null>(null)
   const [clearanceStatus, setClearanceStatus] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -25,33 +21,41 @@ export function EmployeeDetail() {
 
   useEffect(() => {
     if (!id) return
-    Promise.all([
-      supabase.from('employees').select('*, locations(name)').eq('id', id).single(),
-      supabase
-        .from('assignments')
-        .select('*, assets(asset_tag)')
-        .eq('employee_id', id)
-        .order('assigned_at', { ascending: false }),
-      supabase
-        .from('offboarding_clearances')
-        .select('id, status')
-        .eq('employee_id', id)
-        .order('created_at', { ascending: false })
-        .limit(1)
-        .maybeSingle(),
-    ]).then(([empRes, assignRes, clearanceRes]) => {
-      if (empRes.error) {
-        setError(empRes.error.message)
-      } else {
-        setEmployee(empRes.data as unknown as EmployeeWithLocation)
-      }
-      setAssignments((assignRes.data ?? []) as unknown as AssignmentRow[])
-      if (clearanceRes.data) {
-        setClearanceId(clearanceRes.data.id)
-        setClearanceStatus(clearanceRes.data.status)
-      }
-      setIsLoading(false)
-    })
+    supabase
+      .from('employees')
+      .select('*')
+      .eq('id', id)
+      .single()
+      .then(async (empRes) => {
+        if (empRes.error || !empRes.data) {
+          setError(empRes.error?.message ?? 'Employee not found.')
+          setIsLoading(false)
+          return
+        }
+        const emp = empRes.data as Employee
+        setEmployee(emp)
+
+        const [assignRes, clearanceRes] = await Promise.all([
+          supabase
+            .from('assignments')
+            .select('*')
+            .eq('employee_code', emp.employee_code)
+            .order('assigned_at', { ascending: false }),
+          supabase
+            .from('offboarding_clearances')
+            .select('id, status')
+            .eq('employee_id', id)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .maybeSingle(),
+        ])
+        setAssignments((assignRes.data ?? []) as Assignment[])
+        if (clearanceRes.data) {
+          setClearanceId(clearanceRes.data.id)
+          setClearanceStatus(clearanceRes.data.status)
+        }
+        setIsLoading(false)
+      })
   }, [id])
 
   if (isLoading) return <div className="p-8 text-text-secondary">Loading...</div>
@@ -63,7 +67,7 @@ export function EmployeeDetail() {
     <div className="p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-h3">{employee.name}</h1>
+          <h1 className="text-h3">{employee.full_name}</h1>
           <p className="text-sm text-text-secondary">
             <code>{employee.employee_code}</code> · {employee.work_email}
           </p>
@@ -93,7 +97,7 @@ export function EmployeeDetail() {
             ['Department', employee.department ?? '—'],
             ['Designation', employee.designation ?? '—'],
             ['Join date', employee.join_date ?? '—'],
-            ['Location', employee.locations?.name ?? '—'],
+            ['Location', employee.location ?? '—'],
             ['Status', employee.employment_status],
           ] as Array<[string, string]>
         ).map(([label, value]) => (
@@ -127,7 +131,7 @@ export function EmployeeDetail() {
                 <tr key={a.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
                     <Link to={`/assets/${a.asset_id}`} className="font-medium text-brand-red hover:underline">
-                      <code>{a.assets?.asset_tag}</code>
+                      <code>{a.asset_tag}</code>
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>
@@ -163,7 +167,7 @@ export function EmployeeDetail() {
                 <tr key={a.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
                     <Link to={`/assets/${a.asset_id}`} className="font-medium text-brand-red hover:underline">
-                      <code>{a.assets?.asset_tag}</code>
+                      <code>{a.asset_tag}</code>
                     </Link>
                   </td>
                   <td className="px-4 py-3 text-text-secondary">{new Date(a.assigned_at).toLocaleDateString()}</td>

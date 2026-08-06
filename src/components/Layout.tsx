@@ -8,7 +8,6 @@ import {
   ArrowRightLeft,
   ShoppingCart,
   TrendingDown,
-  ScanLine,
   FileBarChart,
   ShieldCheck,
   Moon,
@@ -21,11 +20,6 @@ import { applyTheme, getStoredTheme } from '@/lib/theme'
 import type { Theme } from '@/lib/theme'
 import { Logo } from '@/components/ui/Logo'
 
-// Labels follow the FSD's naming (Register, Assign/Return, Settings) even
-// where the route path is unchanged. There is no standalone "Maintenance"
-// list route yet — maintenance logs only exist inline on each asset's detail
-// page (MaintenancePanel) — so it isn't in this nav; adding one would mean a
-// new query/page, out of scope for a visual-only pass.
 const navItems = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
   { to: '/assets', label: 'Register', icon: Boxes },
@@ -33,7 +27,6 @@ const navItems = [
   { to: '/employees', label: 'Employees', icon: Users },
   { to: '/purchases', label: 'Purchases', icon: ShoppingCart },
   { to: '/depreciation', label: 'Depreciation', icon: TrendingDown },
-  { to: '/audit', label: 'Audit', icon: ScanLine },
   { to: '/reports', label: 'Reports', icon: FileBarChart },
 ]
 

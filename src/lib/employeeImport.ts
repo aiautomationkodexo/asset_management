@@ -31,13 +31,13 @@ export type EmployeeColumnMapping = Partial<Record<EmployeeImportField, string>>
 
 export interface ResolvedEmployeeRow {
   employee_code: string
-  name: string
+  full_name: string
   work_email: string
   department: string | null
   designation: string | null
   join_date: string | null
   employment_status: EmploymentStatus
-  location_id: string | null
+  location: string | null
 }
 
 export interface EmployeeImportRow {
@@ -107,13 +107,13 @@ export function validateEmployeeRows(
       status !== 'error'
         ? {
             employee_code: mapped.employee_code,
-            name: mapped.name,
+            full_name: mapped.name,
             work_email: mapped.work_email,
             department: mapped.department || null,
             designation: mapped.designation || null,
             join_date: mapped.join_date || null,
             employment_status: statusInput as EmploymentStatus,
-            location_id: location?.id ?? null,
+            location: location?.name ?? null,
           }
         : null
 

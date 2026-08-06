@@ -8,7 +8,6 @@ import { ASSET_STATUS_LABELS, ASSET_STATUS_TONE } from '@/lib/assetStatusStyle'
 import { generateLabelsPdf } from '@/lib/labelPdf'
 import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { CustodyPanel } from '@/components/CustodyPanel'
-import { DisposalPanel } from '@/components/DisposalPanel'
 import { MaintenancePanel } from '@/components/MaintenancePanel'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -83,7 +82,7 @@ export function AssetDetail() {
 
   async function handleDelete() {
     if (!id) return
-    if (!window.confirm('Remove this asset? Custody history is preserved.')) return
+    if (!window.confirm('Dispose this asset? It will be removed from the register.')) return
 
     const { error } = await supabase
       .from('assets')
@@ -137,7 +136,7 @@ export function AssetDetail() {
             </Link>
             <button onClick={handleDelete} className={buttonClass('danger')}>
               <Trash2 className="h-4 w-4" strokeWidth={1.75} />
-              Delete
+              Dispose asset
             </button>
           </div>
         )}
@@ -145,7 +144,13 @@ export function AssetDetail() {
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
         <div className="space-y-6 lg:order-1">
-          <CustodyPanel assetId={asset.id} assetStatus={asset.status} isAdmin={isAdmin} onChanged={load} />
+          <CustodyPanel
+            assetId={asset.id}
+            assetTag={asset.asset_tag}
+            assetStatus={asset.status}
+            isAdmin={isAdmin}
+            onChanged={load}
+          />
 
           <MaintenancePanel
             assetId={asset.id}
@@ -153,8 +158,6 @@ export function AssetDetail() {
             isAdmin={isAdmin}
             onChanged={load}
           />
-
-          {isAdmin && <DisposalPanel asset={asset} onChanged={load} />}
 
           <Card>
             <dl className="divide-y divide-divider">

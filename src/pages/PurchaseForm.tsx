@@ -22,14 +22,14 @@ interface LinkedAsset {
 
 export function PurchaseForm() {
   const navigate = useNavigate()
-  const [vendor, setVendor] = useState('')
-  const [invoiceNumber, setInvoiceNumber] = useState('')
-  const [purchaseDate, setPurchaseDate] = useState('')
-  const [currency, setCurrency] = useState('USD')
-  const [amount, setAmount] = useState('')
+  const [vendorName, setVendorName] = useState('')
+  const [invoiceNo, setInvoiceNo] = useState('')
+  const [invoiceDate, setInvoiceDate] = useState('')
+  const [currency, setCurrency] = useState('PKR')
+  const [amountOriginal, setAmountOriginal] = useState('')
   const [fxRate, setFxRate] = useState('1')
   const [warrantyUntil, setWarrantyUntil] = useState('')
-  const [invoiceFile, setInvoiceFile] = useState<string | null>(null)
+  const [attachmentUrl, setAttachmentUrl] = useState<string | null>(null)
 
   const [assets, setAssets] = useState<AssetOption[]>([])
   const [linked, setLinked] = useState<LinkedAsset[]>([])
@@ -52,7 +52,7 @@ export function PurchaseForm() {
     const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
-    reader.onload = () => setInvoiceFile(reader.result as string)
+    reader.onload = () => setAttachmentUrl(reader.result as string)
     reader.readAsDataURL(file)
   }
 
@@ -76,14 +76,14 @@ export function PurchaseForm() {
     const { data: purchase, error: purchaseError } = await supabase
       .from('purchases')
       .insert({
-        vendor,
-        invoice_number: invoiceNumber || null,
-        purchase_date: purchaseDate,
+        vendor_name: vendorName,
+        invoice_no: invoiceNo || null,
+        invoice_date: invoiceDate,
         currency,
-        amount: Number(amount),
+        amount_original: Number(amountOriginal),
         fx_rate: Number(fxRate),
         warranty_until: warrantyUntil || null,
-        invoice_file_data_url: invoiceFile,
+        attachment_url: attachmentUrl,
       })
       .select('id')
       .single()
@@ -96,6 +96,19 @@ export function PurchaseForm() {
 
     for (const item of linked) {
       const asset = assets.find((a) => a.id === item.asset_id)
+
+      const { error: linkError } = await supabase.from('purchase_assets').insert({
+        purchase_id: purchase.id,
+        asset_id: item.asset_id,
+        asset_tag: item.asset_tag,
+        unit_cost: Number(item.unit_cost),
+      })
+      if (linkError) {
+        setIsSaving(false)
+        setError(linkError.message)
+        return
+      }
+
       const { data: category } = await supabase
         .from('asset_categories')
         .select('default_useful_life_months')
@@ -107,7 +120,7 @@ export function PurchaseForm() {
         .update({
           purchase_id: purchase.id,
           purchase_cost_base: Number(item.unit_cost),
-          in_service_date: purchaseDate,
+          in_service_date: invoiceDate,
           useful_life_months: category?.default_useful_life_months ?? null,
         })
         .eq('id', item.asset_id)
@@ -125,18 +138,18 @@ export function PurchaseForm() {
         <div className="grid grid-cols-2 gap-4">
           <div>
             <Label>Vendor *</Label>
-            <Input value={vendor} onChange={(e) => setVendor(e.target.value)} required />
+            <Input value={vendorName} onChange={(e) => setVendorName(e.target.value)} required />
           </div>
           <div>
             <Label>Invoice number</Label>
-            <Input value={invoiceNumber} onChange={(e) => setInvoiceNumber(e.target.value)} />
+            <Input value={invoiceNo} onChange={(e) => setInvoiceNo(e.target.value)} />
           </div>
         </div>
 
         <div className="grid grid-cols-2 gap-4">
           <div>
-            <Label>Purchase date *</Label>
-            <Input type="date" value={purchaseDate} onChange={(e) => setPurchaseDate(e.target.value)} required />
+            <Label>Invoice date *</Label>
+            <Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} required />
           </div>
           <div>
             <Label>Warranty until</Label>
@@ -151,7 +164,7 @@ export function PurchaseForm() {
           </div>
           <div>
             <Label>Amount *</Label>
-            <Input type="number" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} required />
+            <Input type="number" step="0.01" value={amountOriginal} onChange={(e) => setAmountOriginal(e.target.value)} required />
           </div>
           <div>
             <Label>FX rate</Label>

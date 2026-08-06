@@ -96,7 +96,7 @@ export function EmployeeImport() {
       const touchedCodes = new Set(results.filter((r) => r.status !== 'error').map((r) => r.mapped.employee_code.toLowerCase()))
       const missing = existingEmployees
         .filter((e) => !touchedCodes.has(e.employee_code.toLowerCase()))
-        .map((e) => ({ employee_code: e.employee_code, name: e.name }))
+        .map((e) => ({ employee_code: e.employee_code, name: e.full_name }))
 
       setSummary({ inserted: inserts.length, updated: updates.length, errors: errorCount, missing })
       setStep('done')

@@ -5,17 +5,12 @@ export const EMPLOYMENT_STATUSES: EmploymentStatus[] = ['active', 'notice', 'exi
 export interface Employee {
   id: string
   employee_code: string
-  name: string
+  full_name: string
   work_email: string
   department: string | null
   designation: string | null
   join_date: string | null
   employment_status: EmploymentStatus
-  location_id: string | null
+  location: string | null
   created_at: string
-  updated_at: string
-}
-
-export interface EmployeeWithLocation extends Employee {
-  locations: { name: string } | null
 }

@@ -38,8 +38,8 @@ export function OffboardingClearance() {
       .then(async ({ data }) => {
         if (data) {
           setClearance(data)
-          const { data: emp } = await supabase.from('employees').select('name').eq('id', data.employee_id).single()
-          setEmployeeName(emp?.name ?? '')
+          const { data: emp } = await supabase.from('employees').select('full_name').eq('id', data.employee_id).single()
+          setEmployeeName(emp?.full_name ?? '')
         }
         const { data: itemRows } = await supabase
           .from('offboarding_clearance_items')

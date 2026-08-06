@@ -13,24 +13,24 @@ import { buttonClass } from '@/components/ui/buttonStyles'
 
 interface FormState {
   employee_code: string
-  name: string
+  full_name: string
   work_email: string
   department: string
   designation: string
   join_date: string
   employment_status: EmploymentStatus
-  location_id: string
+  location: string
 }
 
 const EMPTY_FORM: FormState = {
   employee_code: '',
-  name: '',
+  full_name: '',
   work_email: '',
   department: '',
   designation: '',
   join_date: '',
   employment_status: 'active',
-  location_id: '',
+  location: '',
 }
 
 export function EmployeeForm() {
@@ -57,7 +57,7 @@ export function EmployeeForm() {
     if (!id) return
     supabase
       .from('employees')
-      .select('employee_code, name, work_email, department, designation, join_date, employment_status, location_id')
+      .select('employee_code, full_name, work_email, department, designation, join_date, employment_status, location')
       .eq('id', id)
       .single()
       .then(({ data, error }) => {
@@ -66,13 +66,13 @@ export function EmployeeForm() {
         } else if (data) {
           setForm({
             employee_code: data.employee_code,
-            name: data.name,
+            full_name: data.full_name,
             work_email: data.work_email,
             department: data.department ?? '',
             designation: data.designation ?? '',
             join_date: data.join_date ?? '',
             employment_status: data.employment_status,
-            location_id: data.location_id ?? '',
+            location: data.location ?? '',
           })
         }
         setIsLoading(false)
@@ -91,13 +91,13 @@ export function EmployeeForm() {
 
     const payload = {
       employee_code: form.employee_code.trim(),
-      name: form.name.trim(),
+      full_name: form.full_name.trim(),
       work_email: form.work_email.trim(),
       department: form.department.trim() || null,
       designation: form.designation.trim() || null,
       join_date: form.join_date || null,
       employment_status: form.employment_status,
-      location_id: form.location_id || null,
+      location: form.location || null,
     }
 
     if (isEditing && id) {
@@ -140,7 +140,7 @@ export function EmployeeForm() {
           </div>
           <div>
             <Label>Name *</Label>
-            <Input value={form.name} onChange={(e) => update('name', e.target.value)} required />
+            <Input value={form.full_name} onChange={(e) => update('full_name', e.target.value)} required />
           </div>
         </div>
 
@@ -167,10 +167,10 @@ export function EmployeeForm() {
           </div>
           <div>
             <Label>Location</Label>
-            <Select value={form.location_id} onChange={(e) => update('location_id', e.target.value)}>
+            <Select value={form.location} onChange={(e) => update('location', e.target.value)}>
               <option value="">None</option>
               {locations.map((loc) => (
-                <option key={loc.id} value={loc.id}>
+                <option key={loc.id} value={loc.name}>
                   {loc.name}
                 </option>
               ))}

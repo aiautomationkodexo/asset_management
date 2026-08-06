@@ -8,26 +8,21 @@ import { Card } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 
-interface ExceptionRow extends Assignment {
-  assets: { asset_tag: string } | null
-  employees: { name: string } | null
-}
-
 export function CustodyExceptions() {
-  const [rows, setRows] = useState<ExceptionRow[]>([])
+  const [rows, setRows] = useState<Assignment[]>([])
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
     const cutoff = new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString()
     supabase
       .from('assignments')
-      .select('*, assets(asset_tag), employees(name)')
+      .select('*')
       .is('returned_at', null)
       .is('signature_data_url', null)
       .lt('assigned_at', cutoff)
       .order('assigned_at')
       .then(({ data }) => {
-        setRows((data ?? []) as unknown as ExceptionRow[])
+        setRows((data ?? []) as Assignment[])
         setIsLoading(false)
       })
   }, [])
@@ -77,10 +72,10 @@ export function CustodyExceptions() {
                   <tr key={r.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                     <td className="px-4 py-3">
                       <Link to={`/assets/${r.asset_id}`} className="font-medium text-brand-red hover:underline">
-                        <code>{r.assets?.asset_tag}</code>
+                        <code>{r.asset_tag}</code>
                       </Link>
                     </td>
-                    <td className="px-4 py-3 text-text-primary">{r.employees?.name}</td>
+                    <td className="px-4 py-3 text-text-primary">{r.employee_name}</td>
                     <td className="px-4 py-3 text-text-secondary">{new Date(r.assigned_at).toLocaleDateString()}</td>
                     <td className="px-4 py-3 font-medium text-warning-text">{days}</td>
                   </tr>

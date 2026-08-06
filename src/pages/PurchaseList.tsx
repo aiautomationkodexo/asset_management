@@ -19,7 +19,7 @@ export function PurchaseList() {
     supabase
       .from('purchases')
       .select('*')
-      .order('purchase_date', { ascending: false })
+      .order('invoice_date', { ascending: false })
       .then(({ data }) => {
         setPurchases((data ?? []) as Purchase[])
         setIsLoading(false)
@@ -80,13 +80,13 @@ export function PurchaseList() {
                 <tr key={p.id} className="border-b border-divider last:border-0 hover:bg-bg-alt">
                   <td className="px-4 py-3">
                     <Link to={`/purchases/${p.id}`} className="font-medium text-brand-red hover:underline">
-                      {p.vendor}
+                      {p.vendor_name}
                     </Link>
                   </td>
-                  <td className="px-4 py-3 text-text-primary">{p.invoice_number ?? '—'}</td>
-                  <td className="px-4 py-3 text-text-secondary">{p.purchase_date}</td>
+                  <td className="px-4 py-3 text-text-primary">{p.invoice_no ?? '—'}</td>
+                  <td className="px-4 py-3 text-text-secondary">{p.invoice_date}</td>
                   <td className="px-4 py-3 text-text-primary">
-                    {p.currency} {p.amount.toFixed(2)}
+                    {p.currency} {p.amount_original.toFixed(2)}
                   </td>
                 </tr>
               ))

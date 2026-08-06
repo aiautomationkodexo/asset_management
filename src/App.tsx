@@ -23,10 +23,7 @@ import { OffboardingClearance } from './pages/OffboardingClearance'
 import { PurchaseList } from './pages/PurchaseList'
 import { PurchaseDetail } from './pages/PurchaseDetail'
 import { PurchaseForm } from './pages/PurchaseForm'
-import { DepreciationRegister } from './pages/DepreciationRegister'
-import { AuditSessionList } from './pages/AuditSessionList'
-import { AuditSession } from './pages/AuditSession'
-import { AuditClosingReport } from './pages/AuditClosingReport'
+import { Depreciation } from './pages/Depreciation'
 import { Reports } from './pages/Reports'
 
 // Gated by a simple client-side email/password check (see
@@ -53,10 +50,7 @@ function App() {
                 <Route path="/offboarding/:id" element={<OffboardingClearance />} />
                 <Route path="/purchases" element={<PurchaseList />} />
                 <Route path="/purchases/:id" element={<PurchaseDetail />} />
-                <Route path="/depreciation" element={<DepreciationRegister />} />
-                <Route path="/audit" element={<AuditSessionList />} />
-                <Route path="/audit/:id" element={<AuditSession />} />
-                <Route path="/audit/:id/report" element={<AuditClosingReport />} />
+                <Route path="/depreciation" element={<Depreciation />} />
                 <Route path="/reports" element={<Reports />} />
 
                 <Route element={<AdminOnlyRoute />}>

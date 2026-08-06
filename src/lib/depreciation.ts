@@ -10,15 +10,3 @@ export function bookValue(cost: number, salvage: number, usefulLifeMonths: numbe
   return Math.max(salvage, cost - monthlyDep * elapsed)
 }
 
-// Reducing-balance tax value — annualRate is a fraction (0.2 = 20%/yr),
-// configurable per category via asset_categories.default_tax_depr_rate.
-export function taxValue(cost: number, annualRate: number, inServiceDate: string, asOf: Date): number {
-  if (!annualRate) return cost
-  const elapsed = monthsBetween(new Date(inServiceDate), asOf)
-  const monthlyRate = annualRate / 12
-  return cost * Math.pow(1 - monthlyRate, elapsed)
-}
-
-export function periodStart(date: Date): string {
-  return new Date(date.getFullYear(), date.getMonth(), 1).toISOString().slice(0, 10)
-}

@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { motion } from 'framer-motion'
-import { Boxes, Package, CheckCircle2, Wrench, AlertTriangle, XCircle } from 'lucide-react'
+import { Boxes, Package, CheckCircle2, Wrench, AlertTriangle, XCircle, TrendingDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AssetStatus } from '@/types/asset'
 import { ASSET_STATUSES } from '@/types/asset'
 import { ASSET_STATUS_LABELS, ASSET_STATUS_TONE } from '@/lib/assetStatusStyle'
+import { bookValue } from '@/lib/depreciation'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { cardClass } from '@/components/ui/Card'
 import { Skeleton } from '@/components/ui/Skeleton'
@@ -37,6 +38,7 @@ export function Dashboard() {
     Object.fromEntries(ASSET_STATUSES.map((s) => [s, 0])) as Record<AssetStatus, number>
   )
   const [byCategory, setByCategory] = useState<CategoryCount[]>([])
+  const [netBookValue, setNetBookValue] = useState<number | null>(null)
 
   const load = async () => {
     const { count } = await supabase
@@ -59,17 +61,31 @@ export function Dashboard() {
 
     const { data: categoryRows } = await supabase
       .from('assets')
-      .select('asset_categories(name)')
+      .select('purchase_cost_base, salvage_value, useful_life_months, in_service_date, asset_categories(name)')
       .is('deleted_at', null)
     if (categoryRows) {
       const counts = new Map<string, number>()
-      for (const row of categoryRows as unknown as Array<{ asset_categories: { name: string } | null }>) {
+      const now = new Date()
+      let bookValueTotal = 0
+      for (const row of categoryRows as unknown as Array<{
+        purchase_cost_base: number | null
+        salvage_value: number | null
+        useful_life_months: number | null
+        in_service_date: string | null
+        asset_categories: { name: string } | null
+      }>) {
         const name = row.asset_categories?.name ?? 'Uncategorized'
         counts.set(name, (counts.get(name) ?? 0) + 1)
+        if (row.purchase_cost_base && row.in_service_date) {
+          bookValueTotal += row.useful_life_months
+            ? bookValue(row.purchase_cost_base, row.salvage_value ?? 0, row.useful_life_months, row.in_service_date, now)
+            : row.purchase_cost_base
+        }
       }
       setByCategory(
         Array.from(counts, ([name, count]) => ({ name, count })).sort((a, b) => b.count - a.count)
       )
+      setNetBookValue(bookValueTotal)
     }
   }
 
@@ -135,6 +151,26 @@ export function Dashboard() {
             </motion.div>
           )
         })}
+
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4, ease: 'easeOut', delay: 0.5 }}
+          whileHover={{ scale: 1.01 }}
+          className={cardClass('col-span-2 p-4')}
+        >
+          <div className="mb-2 flex items-center gap-2 text-text-secondary">
+            <TrendingDown className="h-5 w-5" strokeWidth={1.75} />
+            <span className="text-xs">Net book value</span>
+          </div>
+          {netBookValue === null ? (
+            <Skeleton className="h-7 w-24" />
+          ) : (
+            <p className="font-body text-2xl font-semibold leading-tight text-text-strong">
+              PKR <AnimatedCounter value={netBookValue} />
+            </p>
+          )}
+        </motion.div>
       </div>
 
       <motion.div
