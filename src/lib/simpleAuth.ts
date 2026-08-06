@@ -33,6 +33,19 @@ export async function authenticate(email: string, password: string): Promise<Aut
   return { email: data.email, role: data.role as UserRole }
 }
 
+// For Google sign-in: Google has already verified the email, so no password
+// check is needed — just confirm an admin has added this email to auth_users.
+export async function authenticateByEmail(email: string): Promise<AuthUser | null> {
+  const { data, error } = await supabase
+    .from('auth_users')
+    .select('email, role')
+    .ilike('email', email)
+    .maybeSingle()
+
+  if (error || !data) return null
+  return { email: data.email, role: data.role as UserRole }
+}
+
 // Only succeeds for a row an admin already created (email exists) that has
 // never had a password set — never overwrites an existing password.
 export async function setInitialPassword(email: string, password: string): Promise<AuthUser | null> {

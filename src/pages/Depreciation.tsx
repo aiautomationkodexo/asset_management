@@ -1,8 +1,12 @@
 import { useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { bookValue } from '@/lib/depreciation'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
+import { EmptyState } from '@/components/ui/EmptyState'
+import { buttonClass } from '@/components/ui/buttonStyles'
+import { TrendingDown } from 'lucide-react'
 
 interface Row {
   asset_id: string
@@ -55,7 +59,11 @@ export function Depreciation() {
 
   return (
     <div className="p-8">
-      <PageHeader kicker="Finance" title="Depreciation" subtitle="Straight-line book value, calculated live from each asset's cost and useful life." />
+      <PageHeader
+        kicker="Finance"
+        title="Depreciation register"
+        subtitle="Book value per asset, straight-line, calculated on demand — no month-end close, no snapshots."
+      />
 
       <Card className="overflow-hidden">
         <table className="w-full text-sm">
@@ -70,8 +78,17 @@ export function Depreciation() {
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={4} className="px-4 py-6 text-center text-text-secondary">
-                  No depreciable assets with a purchase cost yet.
+                <td colSpan={4}>
+                  <EmptyState
+                    icon={TrendingDown}
+                    title="Nothing to depreciate yet"
+                    description="An asset only shows up here once a purchase has been recorded and linked to it — that's what sets its cost, in-service date, and useful life."
+                    action={
+                      <Link to="/purchases/new" className={buttonClass('primary')}>
+                        Record a purchase
+                      </Link>
+                    }
+                  />
                 </td>
               </tr>
             ) : (
