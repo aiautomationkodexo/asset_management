@@ -125,7 +125,7 @@ export function Layout() {
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="border-b border-border bg-bg-elevated md:hidden">
           <div className="flex h-14 items-center justify-between px-4">
-            <Logo theme={theme} className="h-7 w-auto max-w-[45%] shrink-0" />
+            <Logo theme={theme} className="h-9 w-auto max-w-[55%] shrink-0" />
             <div className="flex items-center gap-2">
               <button
                 onClick={toggleTheme}
