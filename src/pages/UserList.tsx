@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { FormEvent } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { UserRole } from '@/lib/simpleAuth'
+import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
@@ -10,7 +11,7 @@ import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
-import { ShieldCheck } from 'lucide-react'
+import { ShieldCheck, Trash2 } from 'lucide-react'
 
 interface UserRow {
   id: number
@@ -20,12 +21,14 @@ interface UserRow {
 }
 
 export function UserList() {
+  const { email: currentEmail } = useSimpleAuth()
   const [users, setUsers] = useState<UserRow[]>([])
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<UserRole>('user')
   const [error, setError] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
 
   function load() {
     supabase
@@ -53,6 +56,19 @@ export function UserList() {
     }
     setEmail('')
     setRole('user')
+    load()
+  }
+
+  async function handleDelete(user: UserRow) {
+    if (!window.confirm(`Remove ${user.email}? They will no longer be able to sign in.`)) return
+    setDeletingId(user.id)
+    setError(null)
+    const { error } = await supabase.from('auth_users').delete().eq('id', user.id)
+    setDeletingId(null)
+    if (error) {
+      setError(error.message)
+      return
+    }
     load()
   }
 
@@ -86,18 +102,19 @@ export function UserList() {
               <th className="px-4 py-3 font-medium">Email</th>
               <th className="px-4 py-3 font-medium">Role</th>
               <th className="px-4 py-3 font-medium">Status</th>
+              <th className="px-4 py-3 font-medium" />
             </tr>
           </thead>
           <tbody>
             {isLoading ? (
               <tr>
-                <td colSpan={3} className="px-4 py-6 text-center text-text-secondary">
+                <td colSpan={4} className="px-4 py-6 text-center text-text-secondary">
                   Loading...
                 </td>
               </tr>
             ) : users.length === 0 ? (
               <tr>
-                <td colSpan={3}>
+                <td colSpan={4}>
                   <EmptyState icon={ShieldCheck} title="No users yet" description="Add the first user above." />
                 </td>
               </tr>
@@ -108,6 +125,16 @@ export function UserList() {
                   <td className="px-4 py-3 text-text-primary">{u.role}</td>
                   <td className="px-4 py-3">
                     <Badge tone={u.password ? 'success' : 'warning'}>{u.password ? 'Active' : 'Pending setup'}</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <button
+                      onClick={() => handleDelete(u)}
+                      disabled={deletingId === u.id || u.email.toLowerCase() === currentEmail?.toLowerCase()}
+                      title={u.email.toLowerCase() === currentEmail?.toLowerCase() ? "You can't remove your own account" : 'Remove user'}
+                      className={buttonClass('danger', 'px-2 py-1')}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
                   </td>
                 </tr>
               ))
