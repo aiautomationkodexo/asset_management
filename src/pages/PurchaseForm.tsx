@@ -71,6 +71,12 @@ export function PurchaseForm() {
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
+
+    if (linked.length === 0) {
+      setError('Link at least one asset before creating the purchase — otherwise nothing gets a cost basis.')
+      return
+    }
+
     setIsSaving(true)
 
     const { data: purchase, error: purchaseError } = await supabase
@@ -125,6 +131,8 @@ export function PurchaseForm() {
         })
         .eq('id', item.asset_id)
     }
+
+    await supabase.rpc('notify_purchase_recorded', { p_purchase_id: purchase.id })
 
     setIsSaving(false)
     navigate(`/purchases/${purchase.id}`)

@@ -81,8 +81,9 @@ export function AssetDetail() {
   }
 
   async function handleDelete() {
-    if (!id) return
-    if (!window.confirm('Dispose this asset? It will be removed from the register.')) return
+    if (!id || !asset) return
+    const method = window.prompt('Disposal method (e.g. sold, scrapped, donated):')
+    if (method === null) return
 
     const { error } = await supabase
       .from('assets')
@@ -93,6 +94,7 @@ export function AssetDetail() {
       setError(error.message)
       return
     }
+    await supabase.rpc('notify_asset_disposed', { p_asset_tag: asset.asset_tag, p_method: method || null })
     navigate('/assets')
   }
 

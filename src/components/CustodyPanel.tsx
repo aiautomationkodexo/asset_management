@@ -126,7 +126,7 @@ export function CustodyPanel({
       if (returnStatus === 'in_repair') {
         await supabase.from('maintenance_logs').insert({
           asset_id: assetId,
-          log_type: 'repair',
+          type: 'repair',
           description: damageNotes || 'Opened on return from custody',
         })
       }

@@ -1,15 +1,8 @@
 import { useEffect, useState } from 'react'
-import { Download } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { downloadCsv } from '@/lib/csv'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
-import { buttonClass } from '@/components/ui/buttonStyles'
 
-interface ValueByCategory {
-  category: string
-  value: number
-}
 interface InStockRow {
   asset_tag: string
   category: string
@@ -36,7 +29,6 @@ interface RepairRow {
 const IN_REPAIR_TOO_LONG_DAYS = 14
 
 export function Reports() {
-  const [valueByCategory, setValueByCategory] = useState<ValueByCategory[]>([])
   const [inStock, setInStock] = useState<InStockRow[]>([])
   const [valueByDept, setValueByDept] = useState<ValueByDept[]>([])
   const [custody, setCustody] = useState<CustodyRow[]>([])
@@ -52,13 +44,6 @@ export function Reports() {
         .is('deleted_at', null)
 
       const assetRows = (assets ?? []) as any[]
-
-      const byCategory = new Map<string, number>()
-      for (const a of assetRows) {
-        const name = a.asset_categories?.name ?? 'Uncategorized'
-        byCategory.set(name, (byCategory.get(name) ?? 0) + (a.purchase_cost_base ?? 0))
-      }
-      setValueByCategory(Array.from(byCategory, ([category, value]) => ({ category, value })))
 
       setInStock(
         assetRows
@@ -132,22 +117,12 @@ export function Reports() {
       <PageHeader kicker="Insights" title="Reports" />
 
       <ReportCard
-        title="What we own & its value — by category"
-        rows={valueByCategory}
-        columns={[
-          ['category', 'Category'],
-          ['value', 'Value'],
-        ]}
-        filename="value-by-category.csv"
-      />
-      <ReportCard
         title="What's sitting unused (in-stock)"
         rows={inStock}
         columns={[
           ['asset_tag', 'Asset'],
           ['category', 'Category'],
         ]}
-        filename="in-stock.csv"
       />
       <ReportCard
         title="What we own & its value — by department"
@@ -156,7 +131,6 @@ export function Reports() {
           ['department', 'Department'],
           ['value', 'Value'],
         ]}
-        filename="value-by-department.csv"
       />
       <ReportCard
         title="Who has what — custody by department"
@@ -166,7 +140,6 @@ export function Reports() {
           ['employee', 'Employee'],
           ['asset_tag', 'Asset'],
         ]}
-        filename="custody-by-department.csv"
       />
       <ReportCard
         title="Losing warranty soon (60 days)"
@@ -176,7 +149,6 @@ export function Reports() {
           ['vendor', 'Vendor'],
           ['warranty_until', 'Warranty until'],
         ]}
-        filename="warranty-expiring.csv"
       />
       <ReportCard
         title={`In repair too long (>${IN_REPAIR_TOO_LONG_DAYS} days)`}
@@ -185,7 +157,6 @@ export function Reports() {
           ['asset_tag', 'Asset'],
           ['days_open', 'Days open'],
         ]}
-        filename="in-repair-too-long.csv"
       />
     </div>
   )
@@ -195,25 +166,14 @@ function ReportCard<T extends object>({
   title,
   rows,
   columns,
-  filename,
 }: {
   title: string
   rows: T[]
   columns: Array<[keyof T, string]>
-  filename: string
 }) {
   return (
     <div>
-      <div className="mb-2 flex items-center justify-between">
-        <h2 className="text-h6">{title}</h2>
-        <button
-          onClick={() => downloadCsv(filename, rows as unknown as Array<Record<string, unknown>>)}
-          className={buttonClass('tertiary')}
-        >
-          <Download className="h-4 w-4" strokeWidth={1.75} />
-          Export CSV
-        </button>
-      </div>
+      <h2 className="mb-2 text-h6">{title}</h2>
       <Card className="max-w-2xl overflow-hidden">
         <table className="w-full text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">

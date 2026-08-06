@@ -26,7 +26,7 @@ export function MaintenancePanel({
   const [logType, setLogType] = useState<MaintenanceLogType>('repair')
   const [vendor, setVendor] = useState('')
   const [cost, setCost] = useState('0')
-  const [downtimeHours, setDowntimeHours] = useState('')
+  const [downtimeDays, setDowntimeDays] = useState('')
   const [description, setDescription] = useState('')
   const [stillOpen, setStillOpen] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -60,10 +60,10 @@ export function MaintenancePanel({
     setError(null)
     const { error: insertError } = await supabase.from('maintenance_logs').insert({
       asset_id: assetId,
-      log_type: logType,
-      vendor: vendor || null,
+      type: logType,
+      vendor_name: vendor || null,
       cost: Number(cost) || 0,
-      downtime_hours: downtimeHours ? Number(downtimeHours) : null,
+      downtime_days: downtimeDays ? Number(downtimeDays) : null,
       description: description || null,
       resolved_at: stillOpen ? null : new Date().toISOString(),
     })
@@ -75,7 +75,7 @@ export function MaintenancePanel({
     setOpen(false)
     setVendor('')
     setCost('0')
-    setDowntimeHours('')
+    setDowntimeDays('')
     setDescription('')
     setStillOpen(true)
     load()
@@ -84,7 +84,9 @@ export function MaintenancePanel({
 
   async function resolveLog(id: string) {
     await supabase.from('maintenance_logs').update({ resolved_at: new Date().toISOString() }).eq('id', id)
+    await supabase.from('assets').update({ status: 'in_stock' }).eq('id', assetId).eq('status', 'in_repair')
     load()
+    onChanged()
   }
 
   return (
@@ -127,10 +129,10 @@ export function MaintenancePanel({
             />
             <Input
               type="number"
-              step="0.5"
-              placeholder="Downtime (hours)"
-              value={downtimeHours}
-              onChange={(e) => setDowntimeHours(e.target.value)}
+              step="1"
+              placeholder="Downtime (days)"
+              value={downtimeDays}
+              onChange={(e) => setDowntimeDays(e.target.value)}
             />
           </div>
           <Textarea
@@ -161,7 +163,7 @@ export function MaintenancePanel({
             {logs.map((l) => (
               <tr key={l.id} className="border-b border-divider last:border-0">
                 <td className="py-1.5 pr-3 text-text-secondary">{l.log_date}</td>
-                <td className="py-1.5 pr-3 capitalize text-text-primary">{l.log_type}</td>
+                <td className="py-1.5 pr-3 capitalize text-text-primary">{l.type}</td>
                 <td className="py-1.5 pr-3 text-text-primary">{l.cost.toFixed(2)}</td>
                 <td className="py-1.5">
                   {l.resolved_at ? (
