@@ -100,7 +100,7 @@ export function SimpleLogin() {
 
       <Card className="relative z-10 w-full max-w-sm p-8">
         <h1 className="text-h4 mb-1">Sign in</h1>
-        <p className="mb-6 text-sm text-text-secondary">Asset management console</p>
+        <p className="mb-6 text-sm text-text-secondary">Register, assign, track, and depreciate the assets — all in one system.</p>
 
         <button
           type="button"
@@ -166,6 +166,10 @@ export function SimpleLogin() {
           </Button>
         </form>
       </Card>
+
+      <p className="relative z-10 mt-6 text-body-xs text-text-tertiary">
+        Access is limited to authorized Kodexo Labs accounts.
+      </p>
     </div>
   )
 }
