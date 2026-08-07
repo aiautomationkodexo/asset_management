@@ -193,9 +193,22 @@ export function AssetDetail() {
             </h1>
             <Badge tone={ASSET_STATUS_TONE[asset.status]}>{ASSET_STATUS_LABELS[asset.status]}</Badge>
           </div>
-          <Link to={`/a/${asset.public_slug}`} className="text-sm text-brand-red hover:underline">
-            Public scan link ↗
-          </Link>
+          <div className="flex flex-wrap items-center gap-3">
+            <Link to={`/a/${asset.public_slug}`} className="text-sm text-brand-red hover:underline">
+              Public scan link ↗
+            </Link>
+            {asset.purchase_id ? (
+              <Link to={`/purchases/${asset.purchase_id}`} className="text-sm text-brand-red hover:underline">
+                View purchase record ↗
+              </Link>
+            ) : (
+              isAdmin && (
+                <Link to={`/purchases/new?assetId=${asset.id}`} className="text-sm text-brand-red hover:underline">
+                  Link purchase
+                </Link>
+              )
+            )}
+          </div>
         </div>
         {isAdmin && (
           <div className="flex w-full flex-col gap-3 sm:w-auto sm:flex-row">

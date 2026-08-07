@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Search, Plus, Upload, Printer, Boxes } from 'lucide-react'
+import { Search, Plus, Upload, Printer, Boxes, ReceiptText, ShoppingCart } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
 import type { AssetCategory, AssetWithRelations } from '@/types/asset'
 import { ASSET_STATUSES } from '@/types/asset'
@@ -117,6 +117,14 @@ export function AssetList() {
             )}
             {isAdmin && (
               <>
+                <Link to="/purchases" className={buttonClass('tertiary')}>
+                  <ReceiptText className="h-4 w-4" strokeWidth={1.75} />
+                  Purchase history
+                </Link>
+                <Link to="/purchases/new" className={buttonClass('tertiary')}>
+                  <ShoppingCart className="h-4 w-4" strokeWidth={1.75} />
+                  Record purchase
+                </Link>
                 <Link to="/assets/import" className={buttonClass('tertiary')}>
                   <Upload className="h-4 w-4" strokeWidth={1.75} />
                   Bulk import

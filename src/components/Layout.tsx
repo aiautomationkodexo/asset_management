@@ -6,7 +6,6 @@ import {
   Boxes,
   Users,
   ArrowRightLeft,
-  ShoppingCart,
   TrendingDown,
   FileBarChart,
   ShieldCheck,
@@ -25,7 +24,6 @@ const navItems = [
   { to: '/assets', label: 'Register', icon: Boxes },
   { to: '/custody/exceptions', label: 'Assign/Return', icon: ArrowRightLeft },
   { to: '/employees', label: 'Employees', icon: Users },
-  { to: '/purchases', label: 'Purchases', icon: ShoppingCart },
   { to: '/depreciation', label: 'Depreciation', icon: TrendingDown },
   { to: '/reports', label: 'Reports', icon: FileBarChart },
 ]

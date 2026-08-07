@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { ChangeEvent, FormEvent } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import { Card } from '@/components/ui/Card'
 import { Label } from '@/components/ui/Label'
@@ -22,6 +22,8 @@ interface LinkedAsset {
 
 export function PurchaseForm() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const preselectedAssetId = searchParams.get('assetId')
   const [vendorName, setVendorName] = useState('')
   const [invoiceNo, setInvoiceNo] = useState('')
   const [invoiceDate, setInvoiceDate] = useState('')
@@ -45,7 +47,14 @@ export function PurchaseForm() {
       .select('id, asset_tag, category_id')
       .is('deleted_at', null)
       .order('asset_tag')
-      .then(({ data }) => setAssets((data ?? []) as AssetOption[]))
+      .then(({ data }) => {
+        const options = (data ?? []) as AssetOption[]
+        setAssets(options)
+        if (preselectedAssetId && options.some((a) => a.id === preselectedAssetId)) {
+          setPickAssetId(preselectedAssetId)
+        }
+      })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   function handleFile(e: ChangeEvent<HTMLInputElement>) {
