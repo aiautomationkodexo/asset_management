@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Calculator, TrendingDown } from 'lucide-react'
 import { supabase } from '@/lib/supabase'
-import { bookValue, bookValueAtMonths, reducingBalanceSchedule } from '@/lib/depreciation'
+import { bookValueAtMonths, reducingBalanceSchedule } from '@/lib/depreciation'
 import type { AssetCategory } from '@/types/asset'
 import { PageHeader } from '@/components/ui/PageHeader'
 import { Card } from '@/components/ui/Card'
@@ -12,12 +12,17 @@ import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
 
+interface MilestoneValue {
+  month: number
+  value: number | null
+}
+
 interface Row {
   asset_id: string
   asset_tag: string
   category_name: string
   cost: number
-  book: number
+  milestones: MilestoneValue[]
 }
 
 const BOOK_VALUE_MILESTONES = [6, 12, 24, 36]
@@ -63,9 +68,7 @@ function DepreciationCalculator({ categories }: { categories: AssetCategory[] })
         <Calculator className="h-5 w-5 text-brand-red" strokeWidth={1.75} />
         <h2 className="text-h6">Estimate a new purchase</h2>
       </div>
-      <p className="mb-4 text-body-xs text-text-secondary">Estimate only — not saved. Nothing here is written to the database.</p>
-
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
         <div>
           <Label>Category (optional)</Label>
           <Select value={categoryId} onChange={(e) => handleCategoryChange(e.target.value)}>
@@ -192,22 +195,26 @@ export function Depreciation() {
       .is('deleted_at', null)
       .not('purchase_cost_base', 'is', null)
       .then(({ data }) => {
-        const now = new Date()
         const built: Row[] = []
         for (const a of (data ?? []) as any[]) {
           const category = a.asset_categories
           if (category?.is_depreciable === false) continue
           if (!a.in_service_date) continue
           const cost = a.purchase_cost_base
-          const book = a.useful_life_months
-            ? bookValue(cost, a.salvage_value ?? 0, a.useful_life_months, a.in_service_date, now)
-            : cost
+          const salvage = a.salvage_value ?? 0
+          const usefulLife = a.useful_life_months
+          const milestones = BOOK_VALUE_MILESTONES.map((month) => ({
+            month,
+            // A milestone past the asset's own useful life doesn't apply — leave it blank
+            // rather than showing the fully-depreciated (salvage) value as if it were real.
+            value: usefulLife && month > usefulLife ? null : bookValueAtMonths(cost, salvage, usefulLife ?? 0, month),
+          }))
           built.push({
             asset_id: a.id,
             asset_tag: a.asset_tag,
             category_name: category?.name ?? 'Uncategorized',
             cost,
-            book,
+            milestones,
           })
         }
         setRows(built)
@@ -218,7 +225,6 @@ export function Depreciation() {
   if (isLoading) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
 
   const totalCost = rows.reduce((sum, r) => sum + r.cost, 0)
-  const totalBook = rows.reduce((sum, r) => sum + r.book, 0)
 
   return (
     <div className="p-4 sm:p-8">
@@ -233,19 +239,23 @@ export function Depreciation() {
       <h2 className="mb-3 text-h6">Current register</h2>
       <Card className="overflow-hidden">
         <div className="overflow-x-auto">
-        <table className="w-full min-w-[560px] text-sm">
+        <table className="w-full min-w-[720px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
               <th className="px-4 py-3 font-medium">Category</th>
               <th className="px-4 py-3 font-medium">Cost</th>
-              <th className="px-4 py-3 font-medium">Book value</th>
+              {BOOK_VALUE_MILESTONES.map((m) => (
+                <th key={m} className="px-4 py-3 font-medium">
+                  Book value @ {m}mo
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
             {rows.length === 0 ? (
               <tr>
-                <td colSpan={4}>
+                <td colSpan={3 + BOOK_VALUE_MILESTONES.length}>
                   <EmptyState
                     icon={TrendingDown}
                     title="Nothing to depreciate yet"
@@ -266,7 +276,11 @@ export function Depreciation() {
                   </td>
                   <td className="px-4 py-3 text-text-primary">{r.category_name}</td>
                   <td className="px-4 py-3 text-text-primary">{r.cost.toFixed(2)}</td>
-                  <td className="px-4 py-3 text-text-primary">{r.book.toFixed(2)}</td>
+                  {r.milestones.map((m) => (
+                    <td key={m.month} className="px-4 py-3 text-text-primary">
+                      {m.value === null ? <span className="text-text-tertiary">—</span> : m.value.toFixed(2)}
+                    </td>
+                  ))}
                 </tr>
               ))
             )}
@@ -277,7 +291,9 @@ export function Depreciation() {
                 <td className="px-4 py-3 font-medium text-text-secondary">Total</td>
                 <td className="px-4 py-3" />
                 <td className="px-4 py-3 font-medium text-text-primary">{totalCost.toFixed(2)}</td>
-                <td className="px-4 py-3 font-medium text-text-primary">{totalBook.toFixed(2)}</td>
+                {BOOK_VALUE_MILESTONES.map((m) => (
+                  <td key={m} className="px-4 py-3" />
+                ))}
               </tr>
             </tfoot>
           )}
