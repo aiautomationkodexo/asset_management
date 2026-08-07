@@ -129,7 +129,14 @@ export function SimpleLogin() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <Label>Email</Label>
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoComplete="email" />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoComplete="email"
+              placeholder="admin@kodexolabs.com"
+            />
           </div>
           <div>
             <Label>{needsPassword ? 'New password' : 'Password'}</Label>
