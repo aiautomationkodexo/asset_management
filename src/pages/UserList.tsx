@@ -55,7 +55,12 @@ export function UserList() {
     const { error } = await supabase.from('auth_users').insert({ email: email.trim(), role, password: null })
     setIsSaving(false)
     if (error) {
-      setError(error.message)
+      // 23505 = unique_violation, from the auth_users_email_lower_idx constraint.
+      setError(
+        error.code === '23505'
+          ? 'An account with this email already exists — check the table below instead of adding it again.'
+          : error.message
+      )
       return
     }
     setEmail('')
