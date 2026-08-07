@@ -10,9 +10,15 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const drawingRef = useRef(false)
 
+  // The canvas renders at whatever CSS width its container allows (it can be
+  // narrower than its 320x120 drawing-buffer resolution on small screens), so
+  // pointer coordinates must be scaled from rendered size back to buffer size.
   function getPos(e: ReactPointerEvent<HTMLCanvasElement>) {
-    const rect = canvasRef.current!.getBoundingClientRect()
-    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+    const canvas = canvasRef.current!
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }
   }
 
   function handlePointerDown(e: ReactPointerEvent<HTMLCanvasElement>) {
@@ -59,7 +65,8 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
         ref={canvasRef}
         width={320}
         height={120}
-        className="touch-none rounded-radius-md border border-border bg-white"
+        style={{ aspectRatio: '320 / 120' }}
+        className="w-full max-w-[320px] touch-none rounded-radius-md border border-border bg-white"
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

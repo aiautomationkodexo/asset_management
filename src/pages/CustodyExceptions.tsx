@@ -32,7 +32,8 @@ export function CustodyExceptions() {
       <PageHeader kicker="Assign/Return" title="Acknowledgment exceptions" subtitle="Assignments still unsigned for more than 3 days." />
 
       <Card className="max-w-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -84,6 +85,7 @@ export function CustodyExceptions() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )
