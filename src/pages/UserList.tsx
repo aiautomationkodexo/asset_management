@@ -19,7 +19,6 @@ interface UserRow {
   email: string
   role: UserRole
   password: string | null
-  is_active: boolean
 }
 
 export function UserList() {
@@ -37,7 +36,7 @@ export function UserList() {
   function load() {
     supabase
       .from('auth_users')
-      .select('id, email, role, password, is_active')
+      .select('id, email, role, password')
       .order('email')
       .then(({ data, error }) => {
         if (error) setError(error.message)
@@ -72,13 +71,13 @@ export function UserList() {
     if (!pendingRemoval) return
     setIsRemoving(true)
     setError(null)
-    const { error } = await supabase.from('auth_users').update({ is_active: false }).eq('id', pendingRemoval.id)
+    const { error } = await supabase.from('auth_users').delete().eq('id', pendingRemoval.id)
     setIsRemoving(false)
     if (error) {
       setError(error.message)
       return
     }
-    setSuccessMessage(`${pendingRemoval.email} has been removed and can no longer sign in.`)
+    setSuccessMessage(`${pendingRemoval.email} has been permanently deleted.`)
     setPendingRemoval(null)
     load()
     setTimeout(() => setSuccessMessage(null), 4000)
@@ -138,21 +137,17 @@ export function UserList() {
                   <td className="px-4 py-3 text-text-primary">{u.email}</td>
                   <td className="px-4 py-3 text-text-primary">{u.role}</td>
                   <td className="px-4 py-3">
-                    <Badge tone={!u.is_active ? 'neutral' : u.password ? 'success' : 'warning'}>
-                      {!u.is_active ? 'Removed' : u.password ? 'Active' : 'Pending setup'}
-                    </Badge>
+                    <Badge tone={u.password ? 'success' : 'warning'}>{u.password ? 'Active' : 'Pending setup'}</Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    {u.is_active && (
-                      <button
-                        onClick={() => setPendingRemoval(u)}
-                        disabled={u.email.toLowerCase() === currentEmail?.toLowerCase()}
-                        title={u.email.toLowerCase() === currentEmail?.toLowerCase() ? "You can't remove your own account" : 'Remove user'}
-                        className={buttonClass('danger', 'px-2 py-1')}
-                      >
-                        <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                      </button>
-                    )}
+                    <button
+                      onClick={() => setPendingRemoval(u)}
+                      disabled={u.email.toLowerCase() === currentEmail?.toLowerCase()}
+                      title={u.email.toLowerCase() === currentEmail?.toLowerCase() ? "You can't delete your own account" : 'Delete user'}
+                      className={buttonClass('danger', 'px-2 py-1')}
+                    >
+                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                    </button>
                   </td>
                 </tr>
               ))
@@ -164,9 +159,13 @@ export function UserList() {
 
       <ConfirmModal
         open={pendingRemoval !== null}
-        title="Remove admin"
-        description={pendingRemoval ? `Remove ${pendingRemoval.email}? They will no longer be able to sign in.` : undefined}
-        confirmLabel="Remove admin"
+        title="Delete user"
+        description={
+          pendingRemoval
+            ? `Permanently delete ${pendingRemoval.email}? This removes their account entirely and cannot be undone.`
+            : undefined
+        }
+        confirmLabel="Delete user"
         onConfirm={confirmRemoval}
         onCancel={() => setPendingRemoval(null)}
         isSaving={isRemoving}
