@@ -68,7 +68,7 @@ function DepreciationCalculator({ categories }: { categories: AssetCategory[] })
         <Calculator className="h-5 w-5 text-brand-red" strokeWidth={1.75} />
         <h2 className="text-h6">Estimate a new purchase</h2>
       </div>
-      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-5">
+      <div className="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-5">
         <div>
           <Label>Category (optional)</Label>
           <Select value={categoryId} onChange={(e) => handleCategoryChange(e.target.value)}>
@@ -99,7 +99,7 @@ function DepreciationCalculator({ categories }: { categories: AssetCategory[] })
           />
         </div>
         <div>
-          <Label>Tax depreciation rate %</Label>
+          <Label>Tax rate %</Label>
           <Input
             type="number"
             step="0.1"
