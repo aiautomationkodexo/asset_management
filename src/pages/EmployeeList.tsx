@@ -13,6 +13,7 @@ import { Select } from '@/components/ui/Select'
 import { Skeleton } from '@/components/ui/Skeleton'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 const STATUS_TONE: Record<string, 'success' | 'warning' | 'neutral'> = {
   active: 'success',
@@ -49,7 +50,7 @@ export function EmployeeList() {
   }, [search, statusFilter])
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="People"
         title="Employees"
@@ -83,7 +84,7 @@ export function EmployeeList() {
           <option value="">All statuses</option>
           {EMPLOYMENT_STATUSES.map((s) => (
             <option key={s} value={s}>
-              {s}
+              {sentenceCase(s)}
             </option>
           ))}
         </Select>
@@ -92,7 +93,8 @@ export function EmployeeList() {
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[640px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Code</th>
@@ -153,13 +155,16 @@ export function EmployeeList() {
                   <td className="px-4 py-3 text-text-primary">{emp.department ?? '—'}</td>
                   <td className="px-4 py-3 text-text-primary">{emp.location ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <Badge tone={STATUS_TONE[emp.employment_status] ?? 'neutral'}>{emp.employment_status}</Badge>
+                    <Badge tone={STATUS_TONE[emp.employment_status] ?? 'neutral'}>
+                      {sentenceCase(emp.employment_status)}
+                    </Badge>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )

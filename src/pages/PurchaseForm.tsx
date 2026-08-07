@@ -139,11 +139,11 @@ export function PurchaseForm() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-h3 mb-6">Record purchase</h1>
 
       <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Vendor *</Label>
             <Input value={vendorName} onChange={(e) => setVendorName(e.target.value)} required />
@@ -154,7 +154,7 @@ export function PurchaseForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Invoice date *</Label>
             <Input type="date" value={invoiceDate} onChange={(e) => setInvoiceDate(e.target.value)} required />
@@ -165,7 +165,7 @@ export function PurchaseForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <Label>Currency</Label>
             <Input value={currency} onChange={(e) => setCurrency(e.target.value)} />
@@ -191,8 +191,8 @@ export function PurchaseForm() {
 
         <div className="border-t border-divider pt-4">
           <Label>Link assets (each with its own unit cost)</Label>
-          <div className="mb-2 flex gap-2">
-            <Select value={pickAssetId} onChange={(e) => setPickAssetId(e.target.value)}>
+          <div className="mb-2 flex flex-col gap-2 sm:flex-row">
+            <Select value={pickAssetId} onChange={(e) => setPickAssetId(e.target.value)} className="flex-1">
               <option value="">Select asset</option>
               {assets.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -206,9 +206,9 @@ export function PurchaseForm() {
               placeholder="Unit cost"
               value={pickUnitCost}
               onChange={(e) => setPickUnitCost(e.target.value)}
-              className="w-32"
+              className="w-full sm:w-32"
             />
-            <button type="button" onClick={addLinkedAsset} className={buttonClass('tertiary')}>
+            <button type="button" onClick={addLinkedAsset} className={buttonClass('tertiary', 'w-full sm:w-auto')}>
               Add
             </button>
           </div>

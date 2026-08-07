@@ -143,9 +143,17 @@ export function Layout() {
               </button>
             </div>
           </div>
-          <nav className="flex gap-1 overflow-x-auto border-t border-divider px-2 py-2">
-            <NavList items={allItems} groupId="mobile-nav" />
-          </nav>
+          <div className="relative border-t border-divider">
+            <nav className="flex gap-1 overflow-x-auto px-2 py-2">
+              <NavList items={allItems} groupId="mobile-nav" />
+            </nav>
+            {/* Fade hint that the nav scrolls horizontally — it starts
+                scrolled to the left, so only the trailing edge needs one. */}
+            <div
+              className="pointer-events-none absolute inset-y-0 right-0 w-8 bg-gradient-to-l from-bg-elevated to-transparent"
+              aria-hidden
+            />
+          </div>
         </header>
 
         <main className="flex-1">

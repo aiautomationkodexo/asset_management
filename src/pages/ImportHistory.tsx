@@ -8,6 +8,7 @@ import { Card } from '@/components/ui/Card'
 import { Badge } from '@/components/ui/Badge'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 export function ImportHistory() {
   const [batches, setBatches] = useState<ImportBatch[]>([])
@@ -30,7 +31,7 @@ export function ImportHistory() {
   }, [])
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="Register"
         title="Import history"
@@ -45,7 +46,8 @@ export function ImportHistory() {
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[760px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">File</th>
@@ -80,13 +82,14 @@ export function ImportHistory() {
                   <td className="px-4 py-3 text-text-primary">{b.duplicate_count}</td>
                   <td className="px-4 py-3 text-text-primary">{b.error_count}</td>
                   <td className="px-4 py-3">
-                    <Badge tone={b.status === 'committed' ? 'success' : 'error'}>{b.status}</Badge>
+                    <Badge tone={b.status === 'committed' ? 'success' : 'error'}>{sentenceCase(b.status)}</Badge>
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )

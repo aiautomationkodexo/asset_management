@@ -110,10 +110,10 @@ export function Reports() {
     load()
   }, [])
 
-  if (isLoading) return <div className="p-8 text-text-secondary">Loading...</div>
+  if (isLoading) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
 
   return (
-    <div className="p-8 space-y-8">
+    <div className="p-4 sm:p-8 space-y-8">
       <PageHeader kicker="Insights" title="Reports" />
 
       <ReportCard
@@ -175,7 +175,8 @@ function ReportCard<T extends object>({
     <div>
       <h2 className="mb-2 text-h6">{title}</h2>
       <Card className="max-w-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[420px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               {columns.map(([key, label]) => (
@@ -205,6 +206,7 @@ function ReportCard<T extends object>({
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )

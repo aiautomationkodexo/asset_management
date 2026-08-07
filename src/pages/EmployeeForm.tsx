@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 interface FormState {
   employee_code: string
@@ -125,15 +126,15 @@ export function EmployeeForm() {
   }
 
   if (isLoading) {
-    return <div className="p-8 text-text-secondary">Loading...</div>
+    return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-h3 mb-6">{isEditing ? 'Edit employee' : 'Add employee'}</h1>
 
       <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Employee code *</Label>
             <Input value={form.employee_code} onChange={(e) => update('employee_code', e.target.value)} required />
@@ -149,7 +150,7 @@ export function EmployeeForm() {
           <Input type="email" value={form.work_email} onChange={(e) => update('work_email', e.target.value)} required />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Department</Label>
             <Input value={form.department} onChange={(e) => update('department', e.target.value)} />
@@ -160,7 +161,7 @@ export function EmployeeForm() {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Join date</Label>
             <Input type="date" value={form.join_date} onChange={(e) => update('join_date', e.target.value)} />
@@ -186,7 +187,7 @@ export function EmployeeForm() {
           >
             {EMPLOYMENT_STATUSES.map((s) => (
               <option key={s} value={s}>
-                {s}
+                {sentenceCase(s)}
               </option>
             ))}
           </Select>

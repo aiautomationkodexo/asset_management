@@ -4,19 +4,21 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { supabase } from '@/lib/supabase'
 import type { AssetCategory, AssetCondition, AssetStatus, Location } from '@/types/asset'
 import { ASSET_CONDITIONS, ASSET_STATUSES } from '@/types/asset'
+import { ASSET_STATUS_LABELS } from '@/lib/assetStatusStyle'
 import { Card } from '@/components/ui/Card'
 import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 interface FormState {
   category_id: string
   make: string
   model: string
   serial_no: string
-  condition: AssetCondition
+  condition: AssetCondition | ''
   location_id: string
   status: AssetStatus
   notes: string
@@ -27,7 +29,7 @@ const EMPTY_FORM: FormState = {
   make: '',
   model: '',
   serial_no: '',
-  condition: 'good',
+  condition: '',
   location_id: '',
   status: 'in_stock',
   notes: '',
@@ -95,6 +97,10 @@ export function AssetForm() {
       setError('Category is required.')
       return
     }
+    if (!form.condition) {
+      setError('Condition is required.')
+      return
+    }
 
     setIsSaving(true)
     setError(null)
@@ -132,11 +138,11 @@ export function AssetForm() {
   }
 
   if (isLoading) {
-    return <div className="p-8 text-text-secondary">Loading...</div>
+    return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-h3 mb-6">{isEditing ? 'Edit asset' : 'Add asset'}</h1>
 
       <Card as="form" onSubmit={handleSubmit} className="card-in max-w-lg space-y-4 p-6">
@@ -152,7 +158,7 @@ export function AssetForm() {
           </Select>
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Make</Label>
             <Input value={form.make} onChange={(e) => update('make', e.target.value)} />
@@ -168,13 +174,16 @@ export function AssetForm() {
           <Input value={form.serial_no} onChange={(e) => update('serial_no', e.target.value)} />
         </div>
 
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           <div>
             <Label>Condition *</Label>
             <Select value={form.condition} onChange={(e) => update('condition', e.target.value as AssetCondition)}>
+              <option value="" disabled>
+                Select condition
+              </option>
               {ASSET_CONDITIONS.map((condition) => (
                 <option key={condition} value={condition}>
-                  {condition}
+                  {sentenceCase(condition)}
                 </option>
               ))}
             </Select>
@@ -198,7 +207,7 @@ export function AssetForm() {
             <Select value={form.status} onChange={(e) => update('status', e.target.value as AssetStatus)}>
               {ASSET_STATUSES.map((status) => (
                 <option key={status} value={status}>
-                  {status}
+                  {ASSET_STATUS_LABELS[status]}
                 </option>
               ))}
             </Select>

@@ -84,14 +84,14 @@ export function PurchaseDetail() {
     load()
   }
 
-  if (isLoading || !purchase) return <div className="p-8 text-text-secondary">Loading...</div>
+  if (isLoading || !purchase) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
 
   const total = assets.reduce((sum, a) => sum + (a.unit_cost ?? 0), 0)
   const linkedAssetIds = new Set(assets.map((a) => a.asset_id))
   const availableOptions = assetOptions.filter((a) => !linkedAssetIds.has(a.id))
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-h3 mb-2">{purchase.vendor_name}</h1>
       <p className="mb-6 text-sm text-text-secondary">
         Invoice {purchase.invoice_no ?? '—'} · {purchase.invoice_date} · {purchase.currency}{' '}
@@ -111,7 +111,8 @@ export function PurchaseDetail() {
 
       <h2 className="text-h6 mb-3">Linked assets ({assets.length})</h2>
       <Card className="mb-6 max-w-lg overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[360px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -147,12 +148,13 @@ export function PurchaseDetail() {
             </tfoot>
           )}
         </table>
+        </div>
       </Card>
 
       {isAdmin && (
         <Card className="max-w-lg space-y-3 p-6">
           <Label>Link an asset to this purchase</Label>
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-col gap-2 sm:flex-row">
             <Select value={pickAssetId} onChange={(e) => setPickAssetId(e.target.value)} className="flex-1">
               <option value="">Select asset</option>
               {availableOptions.map((a) => (
@@ -167,12 +169,12 @@ export function PurchaseDetail() {
               placeholder="Unit cost"
               value={pickUnitCost}
               onChange={(e) => setPickUnitCost(e.target.value)}
-              className="w-32"
+              className="w-full sm:w-32"
             />
             <button
               onClick={handleAddAsset}
               disabled={isSaving || !pickAssetId || !pickUnitCost}
-              className={buttonClass('primary')}
+              className={buttonClass('primary', 'w-full sm:w-auto')}
             >
               {isSaving ? 'Adding...' : 'Add'}
             </button>

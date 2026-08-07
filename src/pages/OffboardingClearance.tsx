@@ -11,6 +11,7 @@ import { Badge } from '@/components/ui/Badge'
 import { Select } from '@/components/ui/Select'
 import { Input } from '@/components/ui/Input'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 interface ClearanceInfo {
   id: string
@@ -85,7 +86,7 @@ export function OffboardingClearance() {
     doc.text('Offboarding Clearance Certificate', 14, 20)
     doc.setFontSize(11)
     doc.text(`Employee: ${employeeName}`, 14, 32)
-    doc.text(`Status: ${clearance.status}`, 14, 39)
+    doc.text(`Status: ${sentenceCase(clearance.status)}`, 14, 39)
     doc.text(`Created: ${new Date(clearance.created_at).toLocaleDateString()}`, 14, 46)
     if (clearance.completed_at) {
       doc.text(`Cleared on: ${new Date(clearance.completed_at).toLocaleDateString()}`, 14, 53)
@@ -98,7 +99,7 @@ export function OffboardingClearance() {
     y += 6
     for (const item of items) {
       doc.text(item.assignments?.assets?.asset_tag ?? '—', 14, y)
-      doc.text(item.status, 100, y)
+      doc.text(sentenceCase(item.status), 100, y)
       doc.text(item.notes ?? '—', 140, y)
       y += 7
     }
@@ -106,15 +107,15 @@ export function OffboardingClearance() {
     doc.save(`${employeeName.replace(/\s+/g, '-')}-clearance.pdf`)
   }
 
-  if (isLoading || !clearance) return <div className="p-8 text-text-secondary">Loading...</div>
+  if (isLoading || !clearance) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
 
   const pendingCount = items.filter((i) => i.status === 'pending').length
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader kicker="Offboarding" title="Offboarding clearance" subtitle={employeeName} />
       <div className="mb-6 flex items-center gap-2">
-        <Badge tone={clearance.status === 'complete' ? 'success' : 'warning'}>{clearance.status}</Badge>
+        <Badge tone={clearance.status === 'complete' ? 'success' : 'warning'}>{sentenceCase(clearance.status)}</Badge>
         {clearance.status !== 'complete' && (
           <span className="text-sm text-text-secondary">
             {pendingCount} item{pendingCount === 1 ? '' : 's'} pending
@@ -123,7 +124,8 @@ export function OffboardingClearance() {
       </div>
 
       <Card className="mb-6 max-w-2xl overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -137,6 +139,7 @@ export function OffboardingClearance() {
             ))}
           </tbody>
         </table>
+        </div>
       </Card>
 
       <button onClick={exportPdf} className={buttonClass('tertiary')}>

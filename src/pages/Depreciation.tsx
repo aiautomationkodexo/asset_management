@@ -52,13 +52,13 @@ export function Depreciation() {
       })
   }, [])
 
-  if (isLoading) return <div className="p-8 text-text-secondary">Loading...</div>
+  if (isLoading) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
 
   const totalCost = rows.reduce((sum, r) => sum + r.cost, 0)
   const totalBook = rows.reduce((sum, r) => sum + r.book, 0)
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="Finance"
         title="Depreciation register"
@@ -66,7 +66,8 @@ export function Depreciation() {
       />
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -115,6 +116,7 @@ export function Depreciation() {
             </tfoot>
           )}
         </table>
+        </div>
       </Card>
     </div>
   )

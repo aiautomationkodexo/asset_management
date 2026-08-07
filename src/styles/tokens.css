@@ -95,6 +95,15 @@
 .text-body-sm { font-size: 14px; line-height: 1.5; }
 .text-body-xs { font-size: 13px; line-height: 1.4; }
 
+/* Mobile type scale — the desktop sizes above are the SOT values and stay
+   untouched; this only softens them below the phone breakpoint, where a
+   40px display heading wraps badly and can overlap the fixed header. */
+@media (max-width: 480px) {
+  .text-h3 { font-size: 26px; }
+  .text-h4 { font-size: 22px; }
+  .text-h5 { font-size: 19px; }
+}
+
 /* ── Base type rules ─────────────────────────────── */
 body {
   font-family: var(--font-body);

@@ -18,6 +18,12 @@ import { Select } from '@/components/ui/Select'
 import { Badge } from '@/components/ui/Badge'
 import { buttonClass } from '@/components/ui/buttonStyles'
 
+const ROW_STATUS_LABELS: Record<EmployeeImportRow['status'], string> = {
+  insert: 'Insert',
+  update: 'Update',
+  error: 'Error',
+}
+
 type Step = 'upload' | 'mapping' | 'preview' | 'done'
 
 export function EmployeeImport() {
@@ -112,7 +118,7 @@ export function EmployeeImport() {
   const errorCount = results.filter((r) => r.status === 'error').length
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <h1 className="text-h3 mb-6">Bulk import employees</h1>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
@@ -170,7 +176,7 @@ export function EmployeeImport() {
           </div>
 
           <Card className="max-h-96 overflow-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[600px] text-sm">
               <thead className="sticky top-0 border-b border-border bg-bg-alt text-left text-text-secondary">
                 <tr>
                   <th className="px-3 py-2 font-medium">Row</th>
@@ -186,7 +192,7 @@ export function EmployeeImport() {
                     <td className="px-3 py-2 text-text-primary">{r.rowNumber}</td>
                     <td className="px-3 py-2 text-text-primary">{r.mapped.employee_code}</td>
                     <td className="px-3 py-2 text-text-primary">{r.mapped.name}</td>
-                    <td className="px-3 py-2 text-text-primary">{r.status}</td>
+                    <td className="px-3 py-2 text-text-primary">{ROW_STATUS_LABELS[r.status]}</td>
                     <td className="px-3 py-2 text-text-secondary">{r.reasons.join('; ')}</td>
                   </tr>
                 ))}

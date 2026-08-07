@@ -27,7 +27,7 @@ export function PurchaseList() {
   }, [])
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="Finance"
         title="Purchases"
@@ -42,7 +42,8 @@ export function PurchaseList() {
       />
 
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Vendor</th>
@@ -93,6 +94,7 @@ export function PurchaseList() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )

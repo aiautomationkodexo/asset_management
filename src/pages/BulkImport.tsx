@@ -15,6 +15,12 @@ import { buttonClass } from '@/components/ui/buttonStyles'
 
 type Step = 'upload' | 'mapping' | 'preview' | 'done'
 
+const ROW_STATUS_LABELS: Record<ImportRowResult['status'], string> = {
+  ok: 'OK',
+  error: 'Error',
+  duplicate: 'Duplicate',
+}
+
 export function BulkImport() {
   const navigate = useNavigate()
   const [step, setStep] = useState<Step>('upload')
@@ -133,7 +139,7 @@ export function BulkImport() {
   const duplicateCount = results.filter((r) => r.status === 'duplicate').length
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="Register"
         title="Bulk import assets"
@@ -202,7 +208,7 @@ export function BulkImport() {
           </div>
 
           <Card className="max-h-96 overflow-auto">
-            <table className="w-full text-sm">
+            <table className="w-full min-w-[680px] text-sm">
               <thead className="sticky top-0 border-b border-border bg-bg-alt text-left text-text-secondary">
                 <tr>
                   <th className="px-3 py-2 font-medium">Row</th>
@@ -224,7 +230,7 @@ export function BulkImport() {
                     <td className="px-3 py-2 text-text-primary">{r.mapped.serial_no || '—'}</td>
                     <td className="px-3 py-2">
                       <Badge tone={r.status === 'ok' ? 'success' : r.status === 'duplicate' ? 'warning' : 'error'}>
-                        {r.status}
+                        {ROW_STATUS_LABELS[r.status]}
                       </Badge>
                     </td>
                     <td className="px-3 py-2 text-text-secondary">{r.reasons.join('; ')}</td>

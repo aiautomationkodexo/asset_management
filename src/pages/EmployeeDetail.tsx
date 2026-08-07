@@ -8,6 +8,7 @@ import { useSimpleAuth } from '@/contexts/SimpleAuthContext'
 import { Card } from '@/components/ui/Card'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { sentenceCase } from '@/lib/utils'
 
 export function EmployeeDetail() {
   const { isAdmin } = useSimpleAuth()
@@ -58,13 +59,13 @@ export function EmployeeDetail() {
       })
   }, [id])
 
-  if (isLoading) return <div className="p-8 text-text-secondary">Loading...</div>
-  if (error || !employee) return <div className="p-8 text-error-text">{error ?? 'Employee not found.'}</div>
+  if (isLoading) return <div className="p-4 sm:p-8 text-text-secondary">Loading...</div>
+  if (error || !employee) return <div className="p-4 sm:p-8 text-error-text">{error ?? 'Employee not found.'}</div>
 
   const openAssignments = assignments.filter((a) => !a.returned_at)
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <div className="mb-6 flex items-start justify-between">
         <div>
           <h1 className="text-h3">{employee.full_name}</h1>
@@ -83,7 +84,7 @@ export function EmployeeDetail() {
       {clearanceId && (
         <div className="card-in mb-6 max-w-lg rounded-radius-lg border border-warning-border bg-warning-bg p-4 text-sm">
           <p className="text-warning-text">
-            Offboarding clearance: <strong>{clearanceStatus}</strong>.{' '}
+            Offboarding clearance: <strong>{clearanceStatus ? sentenceCase(clearanceStatus) : clearanceStatus}</strong>.{' '}
             <Link to={`/offboarding/${clearanceId}`} className="underline">
               View checklist
             </Link>
@@ -98,7 +99,7 @@ export function EmployeeDetail() {
             ['Designation', employee.designation ?? '—'],
             ['Join date', employee.join_date ?? '—'],
             ['Location', employee.location ?? '—'],
-            ['Status', employee.employment_status],
+            ['Status', sentenceCase(employee.employment_status)],
           ] as Array<[string, string]>
         ).map(([label, value]) => (
           <div key={label} className="flex justify-between px-4 py-3 text-sm">
@@ -110,7 +111,8 @@ export function EmployeeDetail() {
 
       <h2 className="text-h6 mb-3">Currently holding ({openAssignments.length})</h2>
       <Card className="mb-6 overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -142,11 +144,13 @@ export function EmployeeDetail() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
 
       <h2 className="text-h6 mb-3">Full assignment history</h2>
       <Card className="overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[560px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Asset</th>
@@ -180,6 +184,7 @@ export function EmployeeDetail() {
             )}
           </tbody>
         </table>
+        </div>
       </Card>
     </div>
   )

@@ -28,7 +28,7 @@ export function CustodyExceptions() {
   }, [])
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader kicker="Assign/Return" title="Acknowledgment exceptions" subtitle="Assignments still unsigned for more than 3 days." />
 
       <Card className="max-w-2xl overflow-hidden">

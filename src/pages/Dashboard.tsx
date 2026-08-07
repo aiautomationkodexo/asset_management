@@ -100,7 +100,7 @@ export function Dashboard() {
   const maxCategoryCount = Math.max(1, ...chartRows.map((c) => c.count))
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader kicker="Overview" title="Dashboard" />
 
       {/* Bento grid — hero stat spans 2x2, status tiles fill the rest via

@@ -103,7 +103,7 @@ export function AssetList() {
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader
         kicker="Inventory"
         title="Assets"
@@ -163,7 +163,7 @@ export function AssetList() {
 
       <Card className="overflow-hidden">
         <div className="max-h-[70vh] overflow-auto">
-          <table className="w-full text-sm">
+          <table className="w-full min-w-[720px] text-sm">
             <thead className="sticky top-0 z-10 border-b border-border bg-bg-alt text-left text-text-secondary">
               <tr>
                 <th className="px-4 py-3 font-medium">
