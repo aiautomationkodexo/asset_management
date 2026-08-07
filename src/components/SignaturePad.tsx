@@ -54,6 +54,7 @@ export function SignaturePad({ value, onChange }: SignaturePadProps) {
 
   return (
     <div className="space-y-2">
+      <p className="text-body-xs text-text-secondary">Sign in the box below or upload a signature.</p>
       <canvas
         ref={canvasRef}
         width={320}

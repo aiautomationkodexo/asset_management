@@ -10,6 +10,7 @@ import { Label } from '@/components/ui/Label'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { EmptyState } from '@/components/ui/EmptyState'
+import { ConfirmModal } from '@/components/ui/ConfirmModal'
 import { buttonClass } from '@/components/ui/buttonStyles'
 import { ShieldCheck, Trash2 } from 'lucide-react'
 
@@ -18,6 +19,7 @@ interface UserRow {
   email: string
   role: UserRole
   password: string | null
+  is_active: boolean
 }
 
 export function UserList() {
@@ -26,14 +28,16 @@ export function UserList() {
   const [email, setEmail] = useState('')
   const [role, setRole] = useState<UserRole>('user')
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [deletingId, setDeletingId] = useState<number | null>(null)
+  const [isRemoving, setIsRemoving] = useState(false)
+  const [pendingRemoval, setPendingRemoval] = useState<UserRow | null>(null)
 
   function load() {
     supabase
       .from('auth_users')
-      .select('id, email, role, password')
+      .select('id, email, role, password, is_active')
       .order('email')
       .then(({ data, error }) => {
         if (error) setError(error.message)
@@ -59,21 +63,24 @@ export function UserList() {
     load()
   }
 
-  async function handleDelete(user: UserRow) {
-    if (!window.confirm(`Remove ${user.email}? They will no longer be able to sign in.`)) return
-    setDeletingId(user.id)
+  async function confirmRemoval() {
+    if (!pendingRemoval) return
+    setIsRemoving(true)
     setError(null)
-    const { error } = await supabase.from('auth_users').delete().eq('id', user.id)
-    setDeletingId(null)
+    const { error } = await supabase.from('auth_users').update({ is_active: false }).eq('id', pendingRemoval.id)
+    setIsRemoving(false)
     if (error) {
       setError(error.message)
       return
     }
+    setSuccessMessage(`${pendingRemoval.email} has been removed and can no longer sign in.`)
+    setPendingRemoval(null)
     load()
+    setTimeout(() => setSuccessMessage(null), 4000)
   }
 
   return (
-    <div className="p-8">
+    <div className="p-4 sm:p-8">
       <PageHeader kicker="Admin" title="Settings" subtitle="Users" />
 
       <Card as="form" onSubmit={handleAdd} className="card-in mb-6 flex max-w-lg flex-wrap items-end gap-3 p-4">
@@ -94,9 +101,11 @@ export function UserList() {
       </Card>
 
       {error && <p className="mb-4 text-sm text-error-text">{error}</p>}
+      {successMessage && <p className="mb-4 text-sm text-success-text">{successMessage}</p>}
 
       <Card className="max-w-lg overflow-hidden">
-        <table className="w-full text-sm">
+        <div className="overflow-x-auto">
+        <table className="w-full min-w-[520px] text-sm">
           <thead className="border-b border-border bg-bg-alt text-left text-text-secondary">
             <tr>
               <th className="px-4 py-3 font-medium">Email</th>
@@ -124,24 +133,39 @@ export function UserList() {
                   <td className="px-4 py-3 text-text-primary">{u.email}</td>
                   <td className="px-4 py-3 text-text-primary">{u.role}</td>
                   <td className="px-4 py-3">
-                    <Badge tone={u.password ? 'success' : 'warning'}>{u.password ? 'Active' : 'Pending setup'}</Badge>
+                    <Badge tone={!u.is_active ? 'neutral' : u.password ? 'success' : 'warning'}>
+                      {!u.is_active ? 'Removed' : u.password ? 'Active' : 'Pending setup'}
+                    </Badge>
                   </td>
                   <td className="px-4 py-3 text-right">
-                    <button
-                      onClick={() => handleDelete(u)}
-                      disabled={deletingId === u.id || u.email.toLowerCase() === currentEmail?.toLowerCase()}
-                      title={u.email.toLowerCase() === currentEmail?.toLowerCase() ? "You can't remove your own account" : 'Remove user'}
-                      className={buttonClass('danger', 'px-2 py-1')}
-                    >
-                      <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
-                    </button>
+                    {u.is_active && (
+                      <button
+                        onClick={() => setPendingRemoval(u)}
+                        disabled={u.email.toLowerCase() === currentEmail?.toLowerCase()}
+                        title={u.email.toLowerCase() === currentEmail?.toLowerCase() ? "You can't remove your own account" : 'Remove user'}
+                        className={buttonClass('danger', 'px-2 py-1')}
+                      >
+                        <Trash2 className="h-3.5 w-3.5" strokeWidth={1.75} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))
             )}
           </tbody>
         </table>
+        </div>
       </Card>
+
+      <ConfirmModal
+        open={pendingRemoval !== null}
+        title="Remove admin"
+        description={pendingRemoval ? `Remove ${pendingRemoval.email}? They will no longer be able to sign in.` : undefined}
+        confirmLabel="Remove admin"
+        onConfirm={confirmRemoval}
+        onCancel={() => setPendingRemoval(null)}
+        isSaving={isRemoving}
+      />
     </div>
   )
 }

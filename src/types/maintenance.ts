@@ -13,4 +13,8 @@ export interface MaintenanceLog {
   description: string | null
   resolved_at: string | null
   created_at: string
+  // True only for the placeholder row Return auto-creates when the
+  // resulting status is in_repair — lets the UI flag it as needing real
+  // details, and lets the Slack trigger skip alerting on the empty insert.
+  auto_created: boolean
 }

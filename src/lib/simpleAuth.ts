@@ -16,6 +16,7 @@ export async function getUserStatus(email: string): Promise<UserStatus> {
     .from('auth_users')
     .select('password')
     .ilike('email', email)
+    .eq('is_active', true)
     .maybeSingle()
 
   if (error || !data) return 'not_found'
@@ -27,6 +28,7 @@ export async function authenticate(email: string, password: string): Promise<Aut
     .from('auth_users')
     .select('email, role, password')
     .ilike('email', email)
+    .eq('is_active', true)
     .maybeSingle()
 
   if (error || !data || !data.password || data.password !== password) return null
@@ -34,12 +36,14 @@ export async function authenticate(email: string, password: string): Promise<Aut
 }
 
 // For Google sign-in: Google has already verified the email, so no password
-// check is needed — just confirm an admin has added this email to auth_users.
+// check is needed — just confirm an admin has added this email to auth_users
+// and it hasn't been deactivated.
 export async function authenticateByEmail(email: string): Promise<AuthUser | null> {
   const { data, error } = await supabase
     .from('auth_users')
     .select('email, role')
     .ilike('email', email)
+    .eq('is_active', true)
     .maybeSingle()
 
   if (error || !data) return null
@@ -53,6 +57,7 @@ export async function setInitialPassword(email: string, password: string): Promi
     .from('auth_users')
     .update({ password })
     .ilike('email', email)
+    .eq('is_active', true)
     .is('password', null)
     .select('email, role')
     .maybeSingle()

@@ -1,6 +1,7 @@
 export type AssetCondition = 'new' | 'good' | 'fair' | 'poor'
 export type AssetStatus = 'in_stock' | 'assigned' | 'in_repair' | 'lost' | 'disposed'
 export type LocationType = 'desk' | 'room' | 'store' | 'offsite'
+export type AssetDisposalMethod = 'sold' | 'scrapped' | 'donated' | 'other'
 
 export interface AssetCategory {
   id: string
@@ -39,6 +40,11 @@ export interface Asset {
   created_at: string
   updated_at: string
   deleted_at: string | null
+  disposal_date: string | null
+  disposal_method: AssetDisposalMethod | null
+  disposal_proceeds: number | null
+  disposal_notes: string | null
+  disposal_gain_loss: number | null
 }
 
 export interface AssetWithRelations extends Asset {
@@ -48,6 +54,7 @@ export interface AssetWithRelations extends Asset {
 
 export const ASSET_CONDITIONS: AssetCondition[] = ['new', 'good', 'fair', 'poor']
 export const ASSET_STATUSES: AssetStatus[] = ['in_stock', 'assigned', 'in_repair', 'lost', 'disposed']
+export const ASSET_DISPOSAL_METHODS: AssetDisposalMethod[] = ['sold', 'scrapped', 'donated', 'other']
 
 export interface ImportBatch {
   id: string

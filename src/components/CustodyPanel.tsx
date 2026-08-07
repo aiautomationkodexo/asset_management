@@ -12,6 +12,8 @@ import { Label } from '@/components/ui/Label'
 import { Select } from '@/components/ui/Select'
 import { Textarea } from '@/components/ui/Textarea'
 import { buttonClass } from '@/components/ui/buttonStyles'
+import { Input } from '@/components/ui/Input'
+import { sentenceCase, todayDateInputValue, dateInputToTimestamp } from '@/lib/utils'
 
 interface EmployeeOption {
   id: string
@@ -40,10 +42,13 @@ export function CustodyPanel({
   const [isSaving, setIsSaving] = useState(false)
 
   const [employeeCode, setEmployeeCode] = useState('')
-  const [condition, setCondition] = useState<AssetCondition>('good')
+  const [condition, setCondition] = useState<AssetCondition | ''>('')
   const [signature, setSignature] = useState<string | null>(null)
   const [damageNotes, setDamageNotes] = useState('')
   const [returnStatus, setReturnStatus] = useState<'in_stock' | 'in_repair'>('in_stock')
+  const [dateAssigned, setDateAssigned] = useState(todayDateInputValue())
+  const [dateReturned, setDateReturned] = useState(todayDateInputValue())
+  const [dateTransfer, setDateTransfer] = useState(todayDateInputValue())
 
   function load() {
     supabase
@@ -70,16 +75,23 @@ export function CustodyPanel({
   function resetForm() {
     setMode('none')
     setEmployeeCode('')
-    setCondition('good')
+    setCondition('')
     setSignature(null)
     setDamageNotes('')
     setReturnStatus('in_stock')
+    setDateAssigned(todayDateInputValue())
+    setDateReturned(todayDateInputValue())
+    setDateTransfer(todayDateInputValue())
     setError(null)
   }
 
   async function handleAssign() {
     if (!employeeCode) {
       setError('Choose an employee.')
+      return
+    }
+    if (!condition) {
+      setError('Choose a condition.')
       return
     }
     setIsSaving(true)
@@ -93,6 +105,7 @@ export function CustodyPanel({
       condition_out: condition,
       issued_by: email,
       signature_data_url: signature,
+      assigned_at: dateInputToTimestamp(dateAssigned),
     })
     if (!insertError) {
       await supabase.from('assets').update({ status: 'assigned' }).eq('id', assetId)
@@ -109,12 +122,16 @@ export function CustodyPanel({
 
   async function handleReturn() {
     if (!openAssignment) return
+    if (!condition) {
+      setError('Choose a condition.')
+      return
+    }
     setIsSaving(true)
     setError(null)
     const { error: updateError } = await supabase
       .from('assignments')
       .update({
-        returned_at: new Date().toISOString(),
+        returned_at: dateInputToTimestamp(dateReturned),
         condition_in: condition,
         damage_notes: damageNotes || null,
         received_by: email,
@@ -128,6 +145,7 @@ export function CustodyPanel({
           asset_id: assetId,
           type: 'repair',
           description: damageNotes || 'Opened on return from custody',
+          auto_created: true,
         })
       }
       await supabase.from('assets').update({ status: returnStatus }).eq('id', assetId)
@@ -147,6 +165,10 @@ export function CustodyPanel({
       setError('Choose an employee.')
       return
     }
+    if (!condition) {
+      setError('Choose a condition.')
+      return
+    }
     setIsSaving(true)
     setError(null)
     const { error: rpcError } = await supabase.rpc('transfer_asset', {
@@ -155,6 +177,7 @@ export function CustodyPanel({
       p_condition: condition,
       p_admin: email,
       p_signature: signature,
+      p_transfer_date: dateInputToTimestamp(dateTransfer),
     })
     setIsSaving(false)
     if (rpcError) {
@@ -219,11 +242,18 @@ export function CustodyPanel({
             </Select>
           </div>
           <div>
+            <Label>Date assigned</Label>
+            <Input type="date" value={dateAssigned} onChange={(e) => setDateAssigned(e.target.value)} />
+          </div>
+          <div>
             <Label>Condition going out</Label>
             <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
+              <option value="" disabled>
+                Select condition
+              </option>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {sentenceCase(c)}
                 </option>
               ))}
             </Select>
@@ -247,11 +277,18 @@ export function CustodyPanel({
       {mode === 'return' && (
         <div className="mt-4 space-y-4 border-t border-divider pt-4">
           <div>
+            <Label>Date returned</Label>
+            <Input type="date" value={dateReturned} onChange={(e) => setDateReturned(e.target.value)} />
+          </div>
+          <div>
             <Label>Condition coming back</Label>
             <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
+              <option value="" disabled>
+                Select condition
+              </option>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {sentenceCase(c)}
                 </option>
               ))}
             </Select>
@@ -293,11 +330,18 @@ export function CustodyPanel({
             </Select>
           </div>
           <div>
+            <Label>Transfer date</Label>
+            <Input type="date" value={dateTransfer} onChange={(e) => setDateTransfer(e.target.value)} />
+          </div>
+          <div>
             <Label>Condition at transfer</Label>
             <Select value={condition} onChange={(e) => setCondition(e.target.value as AssetCondition)}>
+              <option value="" disabled>
+                Select condition
+              </option>
               {ASSET_CONDITIONS.map((c) => (
                 <option key={c} value={c}>
-                  {c}
+                  {sentenceCase(c)}
                 </option>
               ))}
             </Select>
@@ -323,7 +367,8 @@ export function CustodyPanel({
           <h3 className="mb-2 text-body-xs font-medium uppercase tracking-wide text-text-tertiary">
             Assignment history
           </h3>
-          <table className="w-full text-sm">
+          <div className="overflow-x-auto">
+          <table className="w-full min-w-[420px] text-sm">
             <tbody>
               {history.map((a) => (
                 <tr key={a.id} className="border-b border-divider last:border-0">
@@ -336,6 +381,7 @@ export function CustodyPanel({
               ))}
             </tbody>
           </table>
+          </div>
         </div>
       )}
     </Card>
